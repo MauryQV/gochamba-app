@@ -6,3 +6,160 @@ datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
 }
+
+// Usuario base
+model User {
+    id        String   @id @default(cuid())
+    email     String   @unique
+    password  String
+    isActive  Boolean  @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relaciones
+    profile         Profile?
+    clientRequests  ServiceRequest[] @relation("ClientRequests")
+    workerRequests  ServiceRequest[] @relation("WorkerRequests")
+    givenReviews    Review[]         @relation("ReviewAuthor")
+    receivedReviews Review[]         @relation("ReviewTarget")
+
+    @@map("users")
+}
+
+// Perfil del usuario (datos personales)
+model Profile {
+    id          String  @id @default(cuid())
+    userId      String  @unique
+    fullName    String
+    avatarUrl   String // OBLIGATORIO - foto de perfil
+    description String?
+    phone       String?
+    location    String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relaciones
+    user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    workerProfile WorkerProfile? // Perfil como trabajador (opcional)
+
+    @@map("profiles")
+}
+
+// Perfil específico de trabajador (separado y normalizado)
+model WorkerProfile {
+    id              String  @id @default(cuid())
+    profileId       String  @unique
+    profession      String
+    isAvailable     Boolean @default(true)
+    hourlyRate      Float?
+    experienceYears Int?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relaciones
+    profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+    services Service[]
+
+    @@map("worker_profiles")
+}
+
+// Categorías de servicios
+model ServiceCategory {
+    id          String  @id @default(cuid())
+    name        String  @unique
+    description String?
+    iconUrl     String?
+    isActive    Boolean @default(true)
+
+    // Relaciones
+    services Service[]
+
+    @@map("service_categories")
+}
+
+// Servicios
+model Service {
+    id              String  @id @default(cuid())
+    workerProfileId String
+    categoryId      String
+    title           String
+    description     String
+    price           Float
+    isActive        Boolean @default(true)
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relaciones
+    workerProfile WorkerProfile    @relation(fields: [workerProfileId], references: [id], onDelete: Cascade)
+    category      ServiceCategory  @relation(fields: [categoryId], references: [id])
+    images        ServiceImage[]
+    requests      ServiceRequest[]
+
+    @@map("services")
+}
+
+// Imágenes de servicios
+model ServiceImage {
+    id         String @id @default(cuid())
+    serviceId  String
+    imageUrl   String
+    orderIndex Int    @default(0)
+
+    // Relaciones
+    service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+    @@map("service_images")
+}
+
+// Solicitudes de servicios
+model ServiceRequest {
+    id            String        @id @default(cuid())
+    clientId      String
+    workerId      String // El user que va a hacer el trabajo
+    serviceId     String
+    status        RequestStatus @default(PENDING)
+    message       String?
+    requestedDate DateTime?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relaciones
+    client  User    @relation("ClientRequests", fields: [clientId], references: [id])
+    worker  User    @relation("WorkerRequests", fields: [workerId], references: [id])
+    service Service @relation(fields: [serviceId], references: [id])
+
+    @@map("service_requests")
+}
+
+// Calificaciones y comentarios
+model Review {
+    id       String  @id @default(cuid())
+    authorId String // cliente que califica
+    targetId String // trabajador calificado
+    rating   Int
+    comment  String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relaciones
+    author User @relation("ReviewAuthor", fields: [authorId], references: [id])
+    target User @relation("ReviewTarget", fields: [targetId], references: [id])
+
+    // Un cliente solo puede calificar una vez a cada trabajador
+    @@unique([authorId, targetId])
+    @@map("reviews")
+}
+
+// Enums
+enum RequestStatus {
+    PENDING
+    ACCEPTED
+    REJECTED
+    COMPLETED
+    CANCELLED
+}
