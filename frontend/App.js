@@ -8,7 +8,7 @@ export default function App() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>¡Bienvenido a Expo! </Text>
+        <Text style={styles.title}>¡Bienvenido  </Text>
         
         <Text style={styles.subtitle}>
           Tu app está funcionando perfectamente
