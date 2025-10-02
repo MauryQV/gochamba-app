@@ -10,12 +10,13 @@ datasource db {
 model Usuario {
     id             String   @id @default(cuid())
     email          String   @unique
-    password       String
+    password       String?
     esActivo       Boolean  @default(true)
     creadoEn       DateTime @default(now())
-    es_configurado Boolean  @default(false) // Indica si el usuario ha completado su perfil
+    es_configurado Boolean  @default(false)
     actualizadoEn  DateTime @updatedAt
-    telefono       String   @unique
+    telefono       String?  @unique
+    googleId       String?  @unique
 
     // Relaciones
     perfil             Perfil?

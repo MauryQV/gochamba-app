@@ -23,12 +23,13 @@ CREATE TYPE "EstadoReporte" AS ENUM ('PENDIENTE', 'EN_REVISION', 'RESUELTO', 'DE
 CREATE TABLE "usuarios" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
+    "password" TEXT,
     "esActivo" BOOLEAN NOT NULL DEFAULT true,
     "creadoEn" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "es_configurado" BOOLEAN NOT NULL DEFAULT false,
     "actualizadoEn" TIMESTAMP(3) NOT NULL,
-    "telefono" TEXT NOT NULL,
+    "telefono" TEXT,
+    "googleId" TEXT,
 
     CONSTRAINT "usuarios_pkey" PRIMARY KEY ("id")
 );
@@ -195,6 +196,9 @@ CREATE UNIQUE INDEX "usuarios_email_key" ON "usuarios"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "usuarios_telefono_key" ON "usuarios"("telefono");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "usuarios_googleId_key" ON "usuarios"("googleId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "usuario_roles_usuarioId_rol_key" ON "usuario_roles"("usuarioId", "rol");
