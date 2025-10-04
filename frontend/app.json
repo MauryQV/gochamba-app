@@ -4,6 +4,7 @@
     "slug": "expo-starter",
     "scheme": "expo-starter",
     "version": "1.0.0",
+    "owner": "gochamba",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
