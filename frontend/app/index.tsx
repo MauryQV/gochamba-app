@@ -1,8 +1,13 @@
-import { View, Text, TextInput, TouchableOpacity, Alert, Image } from "react-native";
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import { Link, useRouter } from "expo-router";
+import { Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, EyeClosed } from "lucide-react-native";
-import { Link } from "expo-router";
-
+import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 export default function IndexScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,6 +27,48 @@ export default function IndexScreen() {
       // Handle login logic here
     }, 2000);
   };
+  const router = useRouter();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsSubmitting(true);
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      if (isSuccessResponse(response)) {
+        const { idToken, user } = response.data;
+        const { name, email, photo } = user;
+        console.log({ idToken, name, email, photo });
+        router.push("/one");
+        //navigate
+      } else {
+        //showMessage("Google was cancelled");
+      }
+      setIsSubmitting(false);
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            //showMessage("Google in progress");
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            //showMessage("Google play services not available");
+            break;
+          case statusCodes.SIGN_IN_CANCELLED:
+            //showMessage("Google sign in cancelled");
+            break;
+          default:
+            //showMessage("Something went wrong");
+            break;
+        }
+      } else {
+        // Handle other errors
+        //showMessage("Something went wrong");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <View className="flex-1 bg-white relative">
@@ -38,7 +85,6 @@ export default function IndexScreen() {
         </View>
 
         <View className="space-y-6">
-          {/* Email Input */}
           <View className="mb-4">
             <Text className="text-gray-700 text-sm font-medium mb-2">Email</Text>
             <TextInput
@@ -50,7 +96,6 @@ export default function IndexScreen() {
               autoCapitalize="none"
             />
           </View>
-
           {/* Password Input */}
           <View>
             <Text className="text-gray-700 text-sm font-medium mb-2">Contraseña</Text>
@@ -67,16 +112,14 @@ export default function IndexScreen() {
               </TouchableOpacity>
             </View>
           </View>
-
           {/* Forgot Password */}
           <View className="items-end mt-2">
             <TouchableOpacity>
               <Text className="text-gray-500 text-sm">¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
           </View>
-
           {/* Login Button */}
-          <Link href="/home" className="mt-8" asChild>
+          <Link href="/one" className="mt-8" asChild>
             <TouchableOpacity
               className={`w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center  ${
                 isLoading ? "opacity-80" : ""
@@ -94,23 +137,28 @@ export default function IndexScreen() {
               )}
             </TouchableOpacity>
           </Link>
-
           {/* Divider */}
           <View className="flex-row items-center my-8">
             <View className="flex-1 h-px bg-gray-200"></View>
             <Text className="mx-4 text-gray-500 text-sm">o</Text>
             <View className="flex-1 h-px bg-gray-200"></View>
           </View>
-
           {/* Google Sign In */}
-          <TouchableOpacity className="w-full h-12 bg-white border border-gray-200 rounded-lg flex-row items-center justify-center">
-            <Image
-              source={require("./../../assets/logo-google.png")}
-              style={{ width: 20, height: 20, marginRight: 8 }}
-            />
+          <TouchableOpacity
+            onPress={handleGoogleSignIn}
+            className="w-full h-12 bg-white border border-gray-200 rounded-lg flex-row items-center justify-center"
+          >
+            <Image source={require("./../assets/logo-google.png")} style={{ width: 20, height: 20, marginRight: 8 }} />
             <Text className="text-gray-700 font-medium">Continuar con Google</Text>
           </TouchableOpacity>
-
+          {/* <GoogleSigninButton
+            size={GoogleSigninButton.Size.Wide}
+            color={GoogleSigninButton.Color.Dark}
+            onPress={() => {
+              // initiate sign in
+            }}
+            disabled={false}
+          /> */}
           {/* Sign Up Link */}
           <View className="flex-row items-center justify-center mt-8">
             <Text className="text-gray-600">¿No tienes una cuenta? </Text>
