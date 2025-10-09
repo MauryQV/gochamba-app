@@ -30,45 +30,57 @@ export default function IndexScreen() {
   const router = useRouter();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsSubmitting(true);
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-      if (isSuccessResponse(response)) {
-        const { idToken, user } = response.data;
-        const { name, email, photo } = user;
-        console.log({ idToken, name, email, photo });
-        router.push("/one");
-        //navigate
-      } else {
-        //showMessage("Google was cancelled");
-      }
-      setIsSubmitting(false);
-    } catch (error) {
-      if (isErrorWithCode(error)) {
-        switch (error.code) {
-          case statusCodes.IN_PROGRESS:
-            //showMessage("Google in progress");
-            break;
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            //showMessage("Google play services not available");
-            break;
-          case statusCodes.SIGN_IN_CANCELLED:
-            //showMessage("Google sign in cancelled");
-            break;
-          default:
-            //showMessage("Something went wrong");
-            break;
-        }
-      } else {
-        // Handle other errors
-        //showMessage("Something went wrong");
-      }
-    } finally {
-      setIsSubmitting(false);
+ const handleGoogleSignIn = async () => {
+  try {
+    setIsSubmitting(true);
+    await GoogleSignin.hasPlayServices();
+    const response = await GoogleSignin.signIn();
+
+    if (isSuccessResponse(response)) {
+      const { idToken, user } = response.data;
+      const { name, email, photo } = user;
+
+      console.log("Google user:", { idToken, name, email, photo });
+
+      await sendTokenToBackend(idToken || "");
+
+      router.push("/one");
+    } else {
+      console.log("Inicio de sesión con Google cancelado");
     }
-  };
+  } catch (error) {
+    console.error("Error en Google Sign-In:", error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+const sendTokenToBackend = async (idToken: string) => {
+  try {
+    //esta es mi ip local, tendran que usarla la suya de su red
+   
+    const response = await fetch("http://192.168.0.5:8000/api/google/verify/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id_token: idToken, 
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error en la petición: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(" Respuesta del backend:", data);
+
+  } catch (error) {
+    console.error(" Error enviando token al backend:", error);
+  }
+};
+
 
   return (
     <View className="flex-1 bg-white relative">

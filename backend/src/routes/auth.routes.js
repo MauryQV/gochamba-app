@@ -1,11 +1,16 @@
-import { Router } from "express";
-import { googleAuth } from "../controllers/auth.controller.js";
-import { register } from "../services/auth.service.js";
+import express from "express";
+import {
+  verifyGoogleAuth,
+  completeGoogleRegistration,
+} from "../controllers/auth.controller.js";
+import { validateSchema } from "../middlewares/validateSchema.middleware.js";
 
-const router = Router();
+import { googleVerifySchema, googleCompleteSchema } from "../validations/auth.schema.js";
 
-router.post("/auth/google/", googleAuth);
-router.post("/auth/register", register);
+const router = express.Router();
+
+router.post("/google/verify/", validateSchema(googleVerifySchema), verifyGoogleAuth);
+
+router.post("/google/complete/", validateSchema(googleCompleteSchema), completeGoogleRegistration);
 
 export default router;
-
