@@ -17,6 +17,7 @@ model Usuario {
     actualizadoEn  DateTime @updatedAt
     telefono       String?  @unique
     googleId       String?  @unique
+    departamento   String?
 
     // Relaciones
     perfil             Perfil?
@@ -70,8 +71,8 @@ model Perfil {
     usuarioId      String  @unique
     nombreCompleto String
     fotoUrl        String // obligatorio
-    descripcion    String?
     telefono       String
+    direccion      String?
 
     creadoEn      DateTime @default(now())
     actualizadoEn DateTime @updatedAt

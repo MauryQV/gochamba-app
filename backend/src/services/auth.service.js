@@ -1,96 +1,100 @@
+// src/services/auth.service.js
+import  prisma  from "../../config/prismaClient.js";
 import jwt from "jsonwebtoken";
-import prisma from "../../config/prismaClient.js";
-import { googleClient } from "../../config/googleClient.js";
-import Joi from "joi";
 import bcrypt from "bcrypt";
+import { OAuth2Client } from "google-auth-library";
 
-export async function verifyGoogleToken(idToken) {
-  const ticket = await googleClient.verifyIdToken({
-    idToken,
-    audience: process.env.GOOGLE_CLIENT_ID
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const JWT_SECRET = process.env.JWT_SECRET; 
+
+// verificamos el token de google
+export const verifyGoogleToken = async (id_token) => {
+  const ticket = await client.verifyIdToken({
+    idToken: id_token,
+    audience: process.env.GOOGLE_CLIENT_ID,
   });
   return ticket.getPayload();
-}
+};
 
-export async function findOrCreateUser(googleUser) {
-  const { sub, email, name, picture } = googleUser;
+// creamos o buscamos el usuaario en la base de datos
+export const findOrCreateGoogleUser = async (payload) => {
+  const { email, sub, name, picture } = payload;
 
   let user = await prisma.usuario.findUnique({
-    where: { googleId: sub }
+    where: { email },
+    include: { perfil: true },
   });
+
+  let wasCreated = false;
 
   if (!user) {
     user = await prisma.usuario.create({
       data: {
-        googleId: sub,
         email,
-        esActivo: true,
-        es_configurado: false
-      }
+        googleId: sub,
+        perfil: {
+          create: {
+            nombreCompleto: name || "Usuario sin nombre",
+            fotoUrl: picture || "",
+            telefono: "",
+          },
+        },
+      },
+      include: { perfil: true },
     });
-
-    // perfil basico
-    await prisma.perfil.create({
-      data: {
-        usuarioId: user.id,
-        nombreCompleto: name || "",
-        fotoUrl: picture || "",
-        telefono: ""
-      }
-    });
+    wasCreated = true;
   }
 
-  return user;
-}
+  return { user, wasCreated };
+};
 
-export function generateAppToken(user) {
-  return jwt.sign(
-    { userId: user.id },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-}
+//generar token jwt
+export const generateAppToken = (userId) => {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "7d" });
+};
 
-export async function register(req, res) {
-  const schema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
-    name: Joi.string().min(2).max(100).required(),
-    telefono: Joi.string().optional()
-  });
+// finalizar el registro del usuario
+export const completeGoogleRegistration = async (data) => {
+  const {
+    userId,
+    nombreCompleto,
+    direccion,
+    departamento,
+    telefono,
+    password,
+    confirmPassword,
+    fotoUrl,
+  } = data;
 
-  const { error } = schema.validate(req.body);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  if (password && password !== confirmPassword) {
+    throw new Error("Las contraseñas no coinciden");
+  }
 
-  const { email, password, name, telefono } = req.body;
+  const user = await prisma.usuario.findUnique({ where: { id: userId }, include: { perfil: true } });
+  if (!user) throw new Error("Usuario no encontrado");
 
-  // Verifica si el usuario ya existe
-  const exists = await prisma.usuario.findUnique({ where: { email } });
-  if (exists) return res.status(409).json({ error: "El email ya está registrado" });
+  // Hash de contraseña si se ingresó
+  const hashedPassword = password ? await bcrypt.hash(password, 10) : user.password;
 
-  // Hashea la contraseña
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Crea el usuario
-  const user = await prisma.usuario.create({
+  const updatedUser = await prisma.usuario.update({
+    where: { id: userId },
     data: {
-      email,
-      password: hashedPassword,
-      esActivo: true,
-      es_configurado: false,
-      telefono
-    }
-  });
-
-  // Crea el perfil
-  await prisma.perfil.create({
-    data: {
-      usuarioId: user.id,
-      nombreCompleto: name,
       telefono,
-      fotoUrl: "",
-    }
+      departamento,
+      password: hashedPassword,
+      es_configurado: true,
+      perfil: {
+        update: {
+          nombreCompleto,
+          direccion,
+          telefono,
+          fotoUrl,
+        },
+      },
+    },
+    include: { perfil: true },
   });
 
-  res.json({ user });
-}
+  return updatedUser;
+};
+
