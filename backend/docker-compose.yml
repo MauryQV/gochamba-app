@@ -4,12 +4,12 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_USER: usuario
-      POSTGRES_PASSWORD: admin123
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin123
       POSTGRES_DB: gochamba_db
-      DATABASE_URL: "postgresql://usuario:admin123@localhost:5433/gochamba_db"
+      DATABASE_URL: "postgresql://postgres:Admin123@localhost:5432/gochamba_db"
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 volumes:

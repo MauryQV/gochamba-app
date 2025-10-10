@@ -91,6 +91,29 @@ export async function register(req, res) {
       fotoUrl: "",
     }
   });
+  
 
   res.json({ user });
+}
+export async function getUserForSetup(userId) {
+  const user = await prisma.usuario.findUnique({
+    where: { id: userId },
+    include: { perfil: true }
+  });
+
+  if (!user) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  if (user.es_configurado) {
+    throw new Error('El usuario ya está configurado');
+  }
+
+  return {
+    userId: user.id,
+    nombreCompleto: user.perfil.nombreCompleto,
+    email: user.email,
+    fotoUrl: user.perfil.fotoUrl,
+    needsSetup: !user.es_configurado
+  };
 }

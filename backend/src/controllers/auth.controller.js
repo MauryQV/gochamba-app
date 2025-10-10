@@ -1,5 +1,7 @@
-import { verifyGoogleToken, findOrCreateUser, generateAppToken } from "../services/auth.service.js";
+import { verifyGoogleToken, findOrCreateUser, generateAppToken, getUserForSetup as getUserForSetupService } from "../services/auth.service.js";
 import Joi from "joi";
+import prisma from "../../config/prismaClient.js"; // ← Usar la instancia existente
+
 
 export async function googleAuth(req, res) {
   try {
@@ -74,5 +76,54 @@ export async function googleAuth(req, res) {
   } catch (error) {
     console.error(error);
     res.status(401).json({ error: "Invalid Google token" });
+  }
+}
+export async function getUserForSetupController(req, res) {
+  try {
+    const { userId } = req.params;
+
+    console.log('🔍 Buscando usuario con ID:', userId);
+
+    // ✅ AHORA usa la instancia importada del config
+    const user = await prisma.usuario.findUnique({
+      where: { id: userId },
+      include: { perfil: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado'
+      });
+    }
+
+    if (user.es_configurado) {
+      return res.status(400).json({
+        success: false,
+        message: 'El usuario ya está configurado'
+      });
+    }
+
+    console.log('✅ Usuario encontrado:', user.email);
+
+    res.json({
+      success: true,
+      data: {
+        userId: user.id,
+        nombreCompleto: user.perfil.nombreCompleto,
+        email: user.email,
+        fotoUrl: user.perfil.fotoUrl,
+        needsSetup: !user.es_configurado
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error DETAILED:', error);
+    console.error('❌ Error message:', error.message);
+    
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
   }
 }
