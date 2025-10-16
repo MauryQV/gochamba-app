@@ -2,7 +2,8 @@ import express from 'express';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 //import cors from 'cors';
-import authRoutes from './src/routes/auth.routes.js'
+import authRoutes from './src/routes/auth.routes.js';
+import workRoutes from './src/routes/service.routes.js';
 
 dotenv.config();
 
@@ -19,6 +20,9 @@ app.get('/', (req, res) => {
 
 
 app.use("/api", authRoutes);
+
+app.use("/api", workRoutes);
+
 
 
 app.listen(port, () => {

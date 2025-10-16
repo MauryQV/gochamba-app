@@ -18,6 +18,7 @@ model Usuario {
     telefono       String?  @unique
     googleId       String?  @unique
     departamento   String?
+    tiene_whatsapp Boolean  @default(false)
 
     // Relaciones
     perfil             Perfil?
