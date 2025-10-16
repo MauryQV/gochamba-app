@@ -98,3 +98,27 @@ export const completeGoogleRegistration = async (data) => {
   return updatedUser;
 };
 
+export async function getGooglePrefill(userId) {
+  const u = await prisma.usuario.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      perfil: {
+        select: {
+          nombreCompleto: true, 
+          fotoUrl: true,         
+        },
+      },
+    },
+  });
+
+  if (!u) return null;
+
+  return {
+    userId: u.id,
+    email: u.email,
+    nombreCompleto: u.perfil?.nombreCompleto ?? null,
+    fotoUrl: u.perfil?.fotoUrl ?? null,
+  };
+}
