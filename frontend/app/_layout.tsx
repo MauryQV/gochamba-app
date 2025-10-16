@@ -58,10 +58,26 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: "#ffffff",
+          },
+          headerTintColor: "#2563eb",
+          headerTitleStyle: {
+            fontSize: 14,
+            fontWeight: "400",
+            color: "#6B7280",
+          },
+
+          headerShadowVisible: false,
+          headerTitleAlign: "center",
+        }}
+      >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="register" options={{ headerShown: false }} /> {/* 👈 Add this */}
       </Stack>
     </ThemeProvider>
   );
