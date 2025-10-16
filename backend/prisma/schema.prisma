@@ -109,7 +109,6 @@ model Oficio {
     id          String  @id @default(cuid())
     nombre      String  @unique
     descripcion String?
-    iconoUrl    String?
     esActivo    Boolean @default(true)
 
     trabajadores TrabajadorOficio[]
@@ -122,7 +121,6 @@ model TrabajadorOficio {
     id                 String   @id @default(cuid())
     perfilTrabajadorId String
     oficioId           String
-    esPrincipal        Boolean  @default(false)
     creadoEn           DateTime @default(now())
 
     perfil PerfilTrabajador @relation(fields: [perfilTrabajadorId], references: [id], onDelete: Cascade)
