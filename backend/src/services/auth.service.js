@@ -66,7 +66,7 @@ export const findOrCreateGoogleUser = async (payload) => {
 
 // finalizar el registro del usuario
 export const completeGoogleRegistration = async (data) => {
-  const { userId,nombreCompleto,direccion,departamento,telefono,password,confirmPassword,fotoUrl,} = data;
+  const { userId,nombreCompleto,direccion,departamento,telefono,password,confirmPassword,fotoUrl, tiene_whatsapp} = data;
 
   const user = await prisma.usuario.findUnique({ where: { id: userId }, include: { perfil: true } });
   if (!user) throw new Error("Usuario no encontrado");
@@ -81,6 +81,7 @@ export const completeGoogleRegistration = async (data) => {
       departamento,
       password: hashedPassword,
       es_configurado: true,
+      tiene_whatsapp: tiene_whatsapp,
       perfil: {
         update: {
           nombreCompleto,
@@ -97,7 +98,7 @@ export const completeGoogleRegistration = async (data) => {
 };
 
 export const createUserService = async (data) => {
-  const {email, password, nombreCompleto, telefono,fotoUrl,direccion,departamento,} = data;
+  const {email, password, nombreCompleto, telefono,fotoUrl,direccion,departamento,tiene_whatsapp} = data;
 
   // Verificar si ya existe el usuario
   const existingUser = await prisma.usuario.findUnique({ where: { email } });
@@ -115,7 +116,8 @@ export const createUserService = async (data) => {
         email,
         password: hashedPassword,
         departamento,
-        es_configurado: true, // el usuario completó su configuración
+        es_configurado: true, // el usuario completó su configuracion
+        tiene_whatsapp: tiene_whatsapp,
         perfil: {
           create: {
             nombreCompleto,

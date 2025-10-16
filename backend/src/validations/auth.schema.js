@@ -16,6 +16,7 @@ export const googleCompleteSchema = Joi.object({
     "Chuquisaca"
   ).required(),
   telefono: Joi.string().pattern(/^[0-9]{7,10}$/).required(),
+  tiene_whatsapp: Joi.boolean().required(),
   password: Joi.string().min(6).optional(),
   confirmPassword: Joi.string().min(6).optional(),
   fotoUrl: Joi.string().uri().optional(),
@@ -41,6 +42,7 @@ export const createUserSchema = Joi.object({
     "Chuquisaca"
   ).required(),
   telefono: Joi.string().pattern(/^[0-9]{7,10}$/).required(),
+  tiene_whatsapp: Joi.boolean().required(),
   password: Joi.string().min(6).optional(),
   confirmPassword: Joi.string().min(6).optional(),
   fotoUrl: Joi.string().uri().optional(),
