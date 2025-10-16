@@ -8,6 +8,9 @@ import { Link, useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import axios from "axios";
+
+import { BASE_URL } from "../constants";
 export default function IndexScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,57 +33,46 @@ export default function IndexScreen() {
   const router = useRouter();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
- const handleGoogleSignIn = async () => {
-  try {
-    setIsSubmitting(true);
-    await GoogleSignin.hasPlayServices();
-    const response = await GoogleSignin.signIn();
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsSubmitting(true);
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
 
-    if (isSuccessResponse(response)) {
-      const { idToken, user } = response.data;
-      const { name, email, photo } = user;
+      if (isSuccessResponse(response)) {
+        const { idToken, user } = response.data;
+        const { name, email, photo } = user;
 
-      console.log("Google user:", { idToken, name, email, photo });
-
-      await sendTokenToBackend(idToken || "");
-
-      router.push("/one");
-    } else {
-      console.log("Inicio de sesión con Google cancelado");
+        const res = await sendTokenToBackend(idToken || "");
+        if (res?.needsSetup) {
+          router.push({
+            pathname: "/register/one",
+            params: { setup: JSON.stringify(res) },
+          });
+        } else {
+          router.push("/one");
+        }
+      } else {
+        console.log("Inicio de sesión con Google cancelado");
+      }
+    } catch (error) {
+      console.error("Error en Google Sign-In:", error);
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    console.error("Error en Google Sign-In:", error);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
-const sendTokenToBackend = async (idToken: string) => {
-  try {
-    //esta es mi ip local, tendran que usarla la suya de su red
-   
-    const response = await fetch("http://192.168.0.5:8000/api/google/verify/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id_token: idToken, 
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error en la petición: ${response.status}`);
+  const sendTokenToBackend = async (idToken: string) => {
+    console.log(" Enviando token al backend:", BASE_URL);
+    try {
+      const response = await axios.post(`${BASE_URL}/google/verify`, {
+        id_token: idToken,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(" Error enviando token al backend:", error);
     }
-
-    const data = await response.json();
-    console.log(" Respuesta del backend:", data);
-
-  } catch (error) {
-    console.error(" Error enviando token al backend:", error);
-  }
-};
-
+  };
 
   return (
     <View className="flex-1 bg-white relative">
@@ -131,7 +123,7 @@ const sendTokenToBackend = async (idToken: string) => {
             </TouchableOpacity>
           </View>
           {/* Login Button */}
-          <Link href="/one" className="mt-8" asChild>
+          <Link href="/register/one" className="mt-8" asChild>
             <TouchableOpacity
               className={`w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center  ${
                 isLoading ? "opacity-80" : ""
