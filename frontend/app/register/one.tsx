@@ -4,6 +4,8 @@ import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import { UserRound, Plus, Info } from "lucide-react-native";
 import Dropdown from "../../components/Dropdown";
 import { useRegister } from "./_register-context";
+import * as ImagePicker from "expo-image-picker";
+
 const departamentos = [
   "La Paz",
   "Cochabamba",
@@ -15,13 +17,10 @@ const departamentos = [
   "Beni",
   "Pando",
 ];
-import type { setupData } from "./_register-context";
+
 export default function RegisterScreen() {
   const [isVisible, setIsVisible] = useState(true);
-  const [nombreCompleto, setNombreCompleto] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [departamento, setDepartamento] = useState("");
-  const [profileImage, setProfileImage] = useState(null);
+  const [image, setImage] = useState<string | null>(null);
 
   const { setup } = useLocalSearchParams();
   const { setupData, setSetupData } = useRegister();
@@ -45,6 +44,22 @@ export default function RegisterScreen() {
       });
     }
   }, [setup]);
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
 
   const router = useRouter();
   const handleContinue = () => {
@@ -97,9 +112,11 @@ export default function RegisterScreen() {
                   )}
                 </TouchableOpacity>
 
-                <View className="absolute -bottom-1 right-0 w-6 h-6 bg-blue-500 rounded-full items-center justify-center">
-                  <Plus size={12} color="white" />
-                </View>
+                {/* <TouchableOpacity onPress={pickImage}>
+                  <View className="absolute -bottom-1 right-0 w-6 h-6 bg-blue-500 rounded-full items-center justify-center">
+                    <Plus size={12} color="white" />
+                  </View>
+                </TouchableOpacity> */}
               </View>
               <Text className="text-orange-500 text-sm mt-2 font-medium">Agregar fotografía</Text>
             </View>
