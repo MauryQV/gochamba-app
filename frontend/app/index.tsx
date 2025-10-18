@@ -1,9 +1,12 @@
-import { Link, useRouter } from "expo-router";
-import { Eye, EyeOff, Loader } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useGoogleAuth } from "./register/hooks/_use_google_auth";
 import { useLogin } from "./register/hooks/_use_login";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import SpinningLoader from "@/components/Spinner";
+
 export default function IndexScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,8 +19,16 @@ export default function IndexScreen() {
   const handleRegistration = () => {
     router.push("/register/choose-method");
   };
+  const signout = async () => {
+    try {
+      await GoogleSignin.signOut();
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
   useEffect(() => {
     setIsVisible(true);
+    signout();
   }, []);
 
   const router = useRouter();
@@ -135,7 +146,7 @@ export default function IndexScreen() {
           >
             {isLoginSubmitting ? (
               <View className="flex-row items-center">
-                <Loader size={20} color="white" className="animate-spin" />
+                <SpinningLoader />
               </View>
             ) : (
               <Text className="text-white font-semibold text-base">Ingresar</Text>
@@ -156,7 +167,7 @@ export default function IndexScreen() {
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              <Loader size={20} color="#4B5563" className="animate-spin" />
+              <SpinningLoader />
             ) : (
               <>
                 <Image
