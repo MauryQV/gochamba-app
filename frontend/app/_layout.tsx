@@ -7,6 +7,14 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "./../global.css";
+import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_700Bold,
+  Poppins_900Black,
+  Poppins_600SemiBold,
+} from "@expo-google-fonts/poppins";
+import { Inter_400Regular, Inter_500Medium, Inter_700Bold } from "@expo-google-fonts/inter";
 
 import { useColorScheme } from "@/components/useColorScheme";
 
@@ -27,6 +35,14 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font,
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_700Bold,
+    Poppins_900Black,
+    Poppins_600SemiBold,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_700Bold,
   });
   useEffect(() => {
     GoogleSignin.configure({
@@ -77,7 +93,7 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="register" options={{ headerShown: false }} /> {/* 👈 Add this */}
+        <Stack.Screen name="register" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );
