@@ -23,9 +23,15 @@ export default function RegisterLayout() {
         }}
       >
         <Stack.Screen
+          name="choose-method"
+          options={{
+            headerTitle: "Regístrarse",
+          }}
+        />
+        <Stack.Screen
           name="one"
           options={{
-            headerTitle: "1/3 - Registración",
+            headerTitle: "1/3 - Registrarse",
             headerRight: () => (
               <Link href="/login" asChild>
                 <TouchableOpacity>
@@ -38,7 +44,7 @@ export default function RegisterLayout() {
         <Stack.Screen
           name="two"
           options={{
-            headerTitle: "2/3 - Registración",
+            headerTitle: "2/3 - Registrarse",
             headerRight: () => (
               <Link href="/login" asChild>
                 <TouchableOpacity>
@@ -51,7 +57,7 @@ export default function RegisterLayout() {
         <Stack.Screen
           name="three"
           options={{
-            headerTitle: "3/3 - Registración",
+            headerTitle: "3/3 - Registrarse",
             headerRight: () => (
               <Link href="/login" asChild>
                 <TouchableOpacity>
