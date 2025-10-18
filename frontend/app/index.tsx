@@ -1,16 +1,8 @@
-import {
-  GoogleSignin,
-  isErrorWithCode,
-  isSuccessResponse,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
 import { Link, useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
-import axios from "axios";
-
-import { BASE_URL } from "../constants";
+import { useGoogleAuth } from "./register/hooks/_use_google_auth";
 export default function IndexScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +10,9 @@ export default function IndexScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
+  const handleRegistration = () => {
+    router.push("/register/choose-method");
+  };
   useEffect(() => {
     setIsVisible(true);
   }, []);
@@ -31,52 +26,10 @@ export default function IndexScreen() {
     }, 2000);
   };
   const router = useRouter();
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsSubmitting(true);
-      await GoogleSignin.hasPlayServices();
-      const response = await GoogleSignin.signIn();
-
-      if (isSuccessResponse(response)) {
-        const { idToken, user } = response.data;
-        const { name, email, photo } = user;
-
-        const res = await sendTokenToBackend(idToken || "");
-        if (res?.needsSetup) {
-          router.push({
-            pathname: "/register/one",
-            params: { setup: JSON.stringify(res) },
-          });
-        } else {
-          router.push("/one");
-        }
-      } else {
-        console.log("Inicio de sesión con Google cancelado");
-      }
-    } catch (error) {
-      console.error("Error en Google Sign-In:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const sendTokenToBackend = async (idToken: string) => {
-    console.log(" Enviando token al backend:", BASE_URL);
-    try {
-      const response = await axios.post(`${BASE_URL}/google/verify`, {
-        id_token: idToken,
-      });
-      return response.data;
-    } catch (error) {
-      console.error(" Error enviando token al backend:", error);
-    }
-  };
+  const { handleGoogleSignIn, isSubmitting } = useGoogleAuth();
 
   return (
     <View className="flex-1 bg-white relative">
-      {/* Decorative circles at bottom */}
       <View className="absolute bottom-0 right-0">
         <View className="w-40 h-40 bg-blue-600 rounded-full absolute -bottom-20 -right-10"></View>
         <View className="w-32 h-32 bg-orange-500 rounded-full absolute -bottom-16 right-20"></View>
@@ -100,7 +53,7 @@ export default function IndexScreen() {
               autoCapitalize="none"
             />
           </View>
-          {/* Password Input */}
+
           <View>
             <Text className="text-gray-700 text-sm font-medium mb-2">Contraseña</Text>
             <View className="relative">
@@ -116,13 +69,13 @@ export default function IndexScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          {/* Forgot Password */}
+
           <View className="items-end mt-2">
             <TouchableOpacity>
               <Text className="text-gray-500 text-sm">¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
           </View>
-          {/* Login Button */}
+
           <Link href="/register/one" className="mt-8" asChild>
             <TouchableOpacity
               className={`w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center  ${
@@ -141,13 +94,13 @@ export default function IndexScreen() {
               )}
             </TouchableOpacity>
           </Link>
-          {/* Divider */}
+
           <View className="flex-row items-center my-8">
             <View className="flex-1 h-px bg-gray-200"></View>
             <Text className="mx-4 text-gray-500 text-sm">o</Text>
             <View className="flex-1 h-px bg-gray-200"></View>
           </View>
-          {/* Google Sign In */}
+
           <TouchableOpacity
             onPress={handleGoogleSignIn}
             className="w-full h-12 bg-white border border-gray-200 rounded-lg flex-row items-center justify-center"
@@ -155,18 +108,10 @@ export default function IndexScreen() {
             <Image source={require("./../assets/logo-google.png")} style={{ width: 20, height: 20, marginRight: 8 }} />
             <Text className="text-gray-700 font-medium">Continuar con Google</Text>
           </TouchableOpacity>
-          {/* <GoogleSigninButton
-            size={GoogleSigninButton.Size.Wide}
-            color={GoogleSigninButton.Color.Dark}
-            onPress={() => {
-              // initiate sign in
-            }}
-            disabled={false}
-          /> */}
-          {/* Sign Up Link */}
+
           <View className="flex-row items-center justify-center mt-8">
             <Text className="text-gray-600">¿No tienes una cuenta? </Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleRegistration}>
               <Text className="text-orange-500 font-semibold">Regístrate</Text>
             </TouchableOpacity>
           </View>
