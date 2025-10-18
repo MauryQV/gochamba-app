@@ -1,14 +1,17 @@
 import { Link, useRouter } from "expo-router";
-import { Eye, EyeOff } from "lucide-react-native";
+import { Eye, EyeOff, Loader } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useGoogleAuth } from "./register/hooks/_use_google_auth";
+import { useLogin } from "./register/hooks/_use_login";
 export default function IndexScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
 
   const handleRegistration = () => {
     router.push("/register/choose-method");
@@ -17,16 +20,62 @@ export default function IndexScreen() {
     setIsVisible(true);
   }, []);
 
-  const handleLogin = async () => {
-    setIsLoading(true);
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      // Handle login logic here
-    }, 2000);
-  };
   const router = useRouter();
   const { handleGoogleSignIn, isSubmitting } = useGoogleAuth();
+  const { handleLogin, isSubmitting: isLoginSubmitting, errors, setErrors } = useLogin();
+
+  const handleLoginEvent = async () => {
+    let hasError = false;
+
+    if (!email) {
+      setEmailError(true);
+      hasError = true;
+    } else {
+      setEmailError(false);
+    }
+
+    if (!password) {
+      setPasswordError(true);
+      hasError = true;
+      if (hasError) {
+        setErrors("Debe llenar los campos");
+        return;
+      }
+    } else if (password.length < 6) {
+      setPasswordError(true);
+      setErrors("La contraseña debe tener al menos 6 caracteres");
+      return;
+    } else {
+      setPasswordError(false);
+    }
+
+    if (hasError) {
+      setErrors("Debe llenar los campos");
+      return;
+    }
+
+    await handleLogin(email, password);
+  };
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (emailError) {
+      setEmailError(false);
+    }
+    if (errors) {
+      setErrors("");
+    }
+  };
+
+  const handlePasswordChange = (text: string) => {
+    setPassword(text);
+    if (passwordError) {
+      setPasswordError(false);
+    }
+    if (errors) {
+      setErrors("");
+    }
+  };
 
   return (
     <View className="flex-1 bg-white relative">
@@ -46,10 +95,10 @@ export default function IndexScreen() {
             <Text className="text-gray-700 text-sm font-medium mb-2">Email</Text>
             <TextInput
               keyboardType="email-address"
-              className="w-full h-12 bg-gray-50 rounded-lg px-4 text-black border border-gray-200"
+              className={`w-full h-12 bg-gray-50 rounded-lg px-4 text-black border ${emailError ? "border-red-500" : "border-gray-200"}`}
               placeholder=""
               value={email}
-              onChangeText={(text) => setEmail(text)}
+              onChangeText={handleEmailChange}
               autoCapitalize="none"
             />
           </View>
@@ -59,16 +108,17 @@ export default function IndexScreen() {
             <View className="relative">
               <TextInput
                 secureTextEntry={!showPassword}
-                className="w-full h-12 bg-gray-50 rounded-lg px-4 pr-12 text-black border border-gray-200"
+                className={`w-full h-12 bg-gray-50 rounded-lg px-4 pr-12 text-black border ${passwordError ? "border-red-500" : "border-gray-200"}`}
                 placeholder=""
                 value={password}
-                onChangeText={(text) => setPassword(text)}
+                onChangeText={handlePasswordChange}
               />
               <TouchableOpacity className="absolute right-3 top-3" onPress={() => setShowPassword(!showPassword)}>
                 {showPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
               </TouchableOpacity>
             </View>
           </View>
+          {errors && <Text className="text-red-500 text-sm mt-2">{errors}</Text>}
 
           <View className="items-end mt-2">
             <TouchableOpacity>
@@ -76,24 +126,21 @@ export default function IndexScreen() {
             </TouchableOpacity>
           </View>
 
-          <Link href="/register/one" className="mt-8" asChild>
-            <TouchableOpacity
-              className={`w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center  ${
-                isLoading ? "opacity-80" : ""
-              }`}
-              onPress={handleLogin}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <View className="flex-row items-center">
-                  <View className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full "></View>
-                  <Text className="text-white font-semibold text-base">Ingresando...</Text>
-                </View>
-              ) : (
-                <Text className="text-white font-semibold text-base">Ingresar</Text>
-              )}
-            </TouchableOpacity>
-          </Link>
+          <TouchableOpacity
+            className={`mt-8 w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center ${
+              isLoginSubmitting ? "opacity-80" : ""
+            }`}
+            onPress={handleLoginEvent}
+            disabled={isLoginSubmitting}
+          >
+            {isLoginSubmitting ? (
+              <View className="flex-row items-center">
+                <Loader size={20} color="white" className="animate-spin" />
+              </View>
+            ) : (
+              <Text className="text-white font-semibold text-base">Ingresar</Text>
+            )}
+          </TouchableOpacity>
 
           <View className="flex-row items-center my-8">
             <View className="flex-1 h-px bg-gray-200"></View>
@@ -103,10 +150,22 @@ export default function IndexScreen() {
 
           <TouchableOpacity
             onPress={handleGoogleSignIn}
-            className="w-full h-12 bg-white border border-gray-200 rounded-lg flex-row items-center justify-center"
+            className={`w-full h-12 bg-white border border-gray-200 rounded-lg flex-row items-center justify-center ${
+              isSubmitting ? "opacity-80" : ""
+            }`}
+            disabled={isSubmitting}
           >
-            <Image source={require("./../assets/logo-google.png")} style={{ width: 20, height: 20, marginRight: 8 }} />
-            <Text className="text-gray-700 font-medium">Continuar con Google</Text>
+            {isSubmitting ? (
+              <Loader size={20} color="#4B5563" className="animate-spin" />
+            ) : (
+              <>
+                <Image
+                  source={require("./../assets/logo-google.png")}
+                  style={{ width: 20, height: 20, marginRight: 8 }}
+                />
+                <Text className="text-gray-700 font-medium">Continuar con Google</Text>
+              </>
+            )}
           </TouchableOpacity>
 
           <View className="flex-row items-center justify-center mt-8">
