@@ -66,10 +66,16 @@ export const findOrCreateGoogleUser = async (payload) => {
 
 // finalizar el registro del usuario
 export const completeGoogleRegistration = async (data) => {
-  const { userId,nombreCompleto,direccion,departamento,telefono,password,confirmPassword,fotoUrl, tiene_whatsapp} = data;
+  const { userId, nombreCompleto, direccion, departamento, telefono, password, confirmPassword, fotoUrl, tiene_whatsapp } = data;
 
   const user = await prisma.usuario.findUnique({ where: { id: userId }, include: { perfil: true } });
   if (!user) throw new Error("Usuario no encontrado");
+
+  // Validar si el teléfono ya está registrado por otro usuario
+  const existingPhone = await prisma.usuario.findUnique({ where: { telefono } });
+  if (existingPhone && existingPhone.id !== userId) {
+    throw new Error("El número de teléfono ya está registrado.");
+  }
 
   // Hash de contraseña si se ingresó
   const hashedPassword = password ? await bcrypt.hash(password, 10) : user.password;
@@ -96,7 +102,6 @@ export const completeGoogleRegistration = async (data) => {
 
   return updatedUser;
 };
-
 export const createUserService = async (data) => {
   const {email, password, nombreCompleto, telefono,fotoUrl,direccion,departamento,tiene_whatsapp} = data;
 
@@ -106,6 +111,10 @@ export const createUserService = async (data) => {
     throw new Error("El correo electrónico ya está registrado.");
   }
 
+  const existingPhone = await prisma.usuario.findUnique({ where: { telefono } });
+if (existingPhone) {
+  throw new Error("El número de teléfono ya está registrado.");
+}
   // hasheamos la contraseña 
   const hashedPassword = await bcrypt.hash(password, 10);
 
