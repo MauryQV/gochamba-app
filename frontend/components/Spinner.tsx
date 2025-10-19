@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { Loader } from "lucide-react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from "react-native-reanimated";
 
-export default function CenteredSpinner() {
+export default function CenteredSpinner(colors: { color?: string }) {
   const rotation = useSharedValue(0);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function CenteredSpinner() {
         },
       ]}
     >
-      <Loader width={20} height={20} color="#4B5563" />
+      <Loader width={20} height={20} color={colors.color ? colors.color : "#4B5563"} />
     </Animated.View>
   );
 }
