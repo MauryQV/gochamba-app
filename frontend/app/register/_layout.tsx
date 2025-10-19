@@ -33,7 +33,7 @@ export default function RegisterLayout() {
           options={{
             headerTitle: "1/3 - Registrarse",
             headerRight: () => (
-              <Link href="/login" asChild>
+              <Link href="/" asChild replace>
                 <TouchableOpacity>
                   <Text style={{ color: "#2563eb", fontSize: 14, fontWeight: "500" }}>Salir</Text>
                 </TouchableOpacity>
@@ -46,7 +46,7 @@ export default function RegisterLayout() {
           options={{
             headerTitle: "2/3 - Registrarse",
             headerRight: () => (
-              <Link href="/login" asChild>
+              <Link href="/" asChild replace>
                 <TouchableOpacity>
                   <Text style={{ color: "#2563eb", fontSize: 14, fontWeight: "500" }}>Salir</Text>
                 </TouchableOpacity>
@@ -59,7 +59,7 @@ export default function RegisterLayout() {
           options={{
             headerTitle: "3/3 - Registrarse",
             headerRight: () => (
-              <Link href="/login" asChild>
+              <Link href="/" asChild replace>
                 <TouchableOpacity>
                   <Text style={{ color: "#2563eb", fontSize: 14, fontWeight: "500" }}>Salir</Text>
                 </TouchableOpacity>
