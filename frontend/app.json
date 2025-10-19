@@ -43,7 +43,14 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.399496840515-jolv7lc6dr7rvag6ti7or7j3vp50s6gm"
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "La aplicación necesita acceso a tus fotos."
+        }
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
