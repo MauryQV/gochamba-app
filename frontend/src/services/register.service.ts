@@ -8,13 +8,22 @@ export const registerUserFinish = async (userData: any) => {
     direccion: userData.direccion,
     departamento: userData.departamento,
     telefono: userData.telefono,
+    email: userData.email,
     password: userData.password,
     tiene_whatsapp: userData.tiene_whatsapp,
-    confirmPassword: userData.confirmPassword,
+    confirmPassword: userData.password,
     fotoUrl: userData.fotoUrl,
+    googleId: userData.googleId || null,
   };
   try {
-    const response = await axios.post(`${BASE_URL}/google/complete/`, presenter);
+    let response;
+    if (presenter.googleId === null) {
+      delete presenter.userId;
+      delete presenter.googleId;
+      response = await axios.post(`${BASE_URL}/user/create-user/`, presenter);
+    } else {
+      response = await axios.post(`${BASE_URL}/google/complete/`, presenter);
+    }
     return response.data;
   } catch (error) {
     console.error("Error registering user:", error);

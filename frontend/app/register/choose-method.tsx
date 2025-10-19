@@ -13,8 +13,21 @@ export default function RegisterMainScreen() {
   };
 
   const handleEmailSignUp = () => {
-    // Navigate to email registration flow
-    router.push("/register/one");
+    const res = {
+      user: {
+        id: "",
+        perfil: {
+          nombreCompleto: "",
+          fotoUrl: null,
+        },
+        email: "",
+        googleId: null,
+      },
+    };
+    router.push({
+      pathname: "/register/one",
+      params: { setup: JSON.stringify(res) },
+    });
   };
 
   return (
