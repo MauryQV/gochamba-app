@@ -1,0 +1,53 @@
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import axios from "axios";
+import { BASE_URL } from "../../../constants";
+
+export const useGoogleAuth = () => {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const sendTokenToBackend = async (idToken: string) => {
+    try {
+      const response = await axios.post(`${BASE_URL}/google/verify`, {
+        id_token: idToken,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(" Error enviando token al backend:", error);
+    }
+  };
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsSubmitting(true);
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+
+      if (isSuccessResponse(response)) {
+        const { idToken, user } = response.data;
+        const res = await sendTokenToBackend(idToken || "");
+        if (res?.needsSetup) {
+          router.push({
+            pathname: "/register/one",
+            params: { setup: JSON.stringify(res) },
+          });
+        } else {
+          router.push("/one");
+        }
+      } else {
+        console.log("Inicio de sesión con Google cancelado");
+      }
+    } catch (error) {
+      console.error("Error en Google Sign-In:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return { handleGoogleSignIn, isSubmitting };
+};
