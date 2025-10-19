@@ -18,7 +18,7 @@ export const googleCompleteSchema = Joi.object({
   telefono: Joi.string().pattern(/^[0-9]{7,10}$/).required(),
   tiene_whatsapp: Joi.boolean().required(),
   password: Joi.string().min(6).optional(),
-  confirmPassword: Joi.string().min(6).optional(),
+    confirmPassword: Joi.string().min(6).optional().equal(Joi.ref(password)),
   fotoUrl: Joi.string().uri().optional(),
 });
 
@@ -44,7 +44,7 @@ export const createUserSchema = Joi.object({
   telefono: Joi.string().pattern(/^[0-9]{7,10}$/).required(),
   tiene_whatsapp: Joi.boolean().required(),
   password: Joi.string().min(6).optional(),
-  confirmPassword: Joi.string().min(6).optional(),
+  confirmPassword: Joi.string().min(6).optional().equal(Joi.ref(password)),
   fotoUrl: Joi.string().uri().optional(),
 });
 

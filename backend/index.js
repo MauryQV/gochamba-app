@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 //import cors from 'cors';
 import authRoutes from './src/routes/auth.routes.js';
 import workRoutes from './src/routes/service.routes.js';
+import workerRoutes from './src/routes/worker.routes.js';
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ app.get('/', (req, res) => {
 app.use("/api", authRoutes);
 
 app.use("/api", workRoutes);
+
+app.use("/api", workerRoutes);
 
 
 
