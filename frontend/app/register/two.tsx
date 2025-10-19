@@ -6,11 +6,17 @@ import { useRegister } from "./_register-context";
 
 export default function RegisterStepTwoScreen() {
   const { setupData, setSetupData } = useRegister();
+  const [showErrors, setShowErrors] = useState(false);
 
   const navigator = useRouter();
+
+  const isFormValid = setupData?.telefono && setupData?.telefono !== "" && setupData?.email && setupData?.email !== "";
+
   const handleContinue = () => {
-    // Handle continue logic
-    // Navigate to next step
+    if (!isFormValid) {
+      setShowErrors(true);
+      return;
+    }
     navigator.push("/register/three");
   };
 
@@ -38,10 +44,15 @@ export default function RegisterStepTwoScreen() {
             <View className="mb-4">
               <Text className="text-gray-700 text-sm font-medium mb-2">Número de teléfono</Text>
               <TextInput
-                className="w-full h-12 bg-white rounded-lg px-4 text-black border border-gray-300"
+                className={`w-full h-12 bg-white rounded-lg px-4 text-black border ${
+                  showErrors && !setupData?.telefono ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder=""
                 value={setupData?.telefono || ""}
-                onChangeText={(text) => setSetupData({ ...setupData, telefono: text })}
+                onChangeText={(text) => {
+                  setSetupData({ ...setupData, telefono: text });
+                  if (showErrors) setShowErrors(false);
+                }}
                 keyboardType="phone-pad"
               />
             </View>
@@ -64,29 +75,43 @@ export default function RegisterStepTwoScreen() {
             {/* Email */}
             <View className="mb-4">
               <Text className="text-gray-700 text-sm font-medium mb-2">Email</Text>
-              {true ? (
+              {setupData?.googleId ? (
                 <TextInput
-                  className="w-full h-12 bg-gray-200 rounded-lg px-4 text-black border border-gray-300"
+                  className={`w-full h-12 bg-gray-200 rounded-lg px-4 text-black border ${
+                    showErrors && !setupData?.email ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder=""
                   editable={false}
                   value={setupData?.email || ""}
                 />
               ) : (
                 <TextInput
-                  className="w-full h-12 bg-white rounded-lg px-4 text-black border border-gray-300"
+                  className={`w-full h-12 bg-white rounded-lg px-4 text-black border ${
+                    showErrors && !setupData?.email ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder=""
                   value={setupData?.email || ""}
-                  onChangeText={(text) => setSetupData({ ...setupData, email: text })}
+                  onChangeText={(text) => {
+                    setSetupData({ ...setupData, email: text });
+                    if (showErrors) setShowErrors(false);
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
               )}
             </View>
 
+            {showErrors && (
+              <Text className="text-red-500 text-sm mt-2">Por favor, complete todos los campos requeridos</Text>
+            )}
+
             {/* Continue Button */}
             <TouchableOpacity
-              className="w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center mt-8"
+              className={`w-full h-12 rounded-lg flex items-center justify-center mt-8 ${
+                isFormValid ? "bg-blue-600" : "bg-gray-400"
+              }`}
               onPress={handleContinue}
+              disabled={!isFormValid}
             >
               <View className="flex-row items-center">
                 <Text className="text-white font-semibold text-base mr-2">Siguiente</Text>

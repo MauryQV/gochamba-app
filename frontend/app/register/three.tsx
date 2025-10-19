@@ -4,29 +4,43 @@ import { Link, useRouter } from "expo-router";
 import { Check, Eye, EyeOff } from "lucide-react-native";
 import { useRegister } from "./_register-context";
 import { registerUserFinish } from "@/src/services/register.service";
+import CenteredSpinner from "@/components/Spinner";
 
 export default function RegisterStepThreeScreen() {
   const navigator = useRouter();
   const { setupData, setSetupData } = useRegister();
   const [isVisible, setIsVisible] = useState(true);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showErrors, setShowErrors] = useState(false);
 
-  // Password validation
-  const hasMinLength = setupData?.password.length >= 8;
+  const hasMinLength = (setupData?.password?.length || 0) >= 8;
   const hasNumber = /\d/.test(setupData?.password || "");
+  const passwordsMatch =
+    setupData?.password && setupData?.confirmPassword && setupData?.password === setupData?.confirmPassword;
+  const bothPasswordsFilled = setupData?.password && setupData?.confirmPassword;
+
+  const isFormValid = showPassword
+    ? hasMinLength && hasNumber && setupData?.password
+    : hasMinLength && hasNumber && passwordsMatch;
 
   const handleRegister = async () => {
+    if (!isFormValid) {
+      setShowErrors(true);
+      return;
+    }
+
     setIsLoading(true);
 
-    if (setupData?.password !== setupData?.confirmPassword) {
+    if (!showPassword && setupData?.password !== setupData?.confirmPassword) {
       alert("Las contraseñas no coinciden");
       setIsLoading(false);
-
       return;
+    }
+
+    if (showPassword && setupData?.password) {
+      setSetupData({ ...setupData, confirmPassword: setupData.password });
     }
 
     try {
@@ -64,10 +78,15 @@ export default function RegisterStepThreeScreen() {
               <View className="relative">
                 <TextInput
                   secureTextEntry={!showPassword}
-                  className="w-full h-12 bg-white rounded-lg px-4 pr-12 text-black border border-gray-300"
+                  className={`w-full h-12 bg-white rounded-lg px-4 pr-12 text-black border ${
+                    showErrors && (!hasMinLength || !hasNumber) ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder=""
                   value={setupData?.password || ""}
-                  onChangeText={(text) => setSetupData({ ...setupData, password: text })}
+                  onChangeText={(text) => {
+                    setSetupData({ ...setupData, password: text });
+                    if (showErrors) setShowErrors(false);
+                  }}
                 />
                 <TouchableOpacity className="absolute right-3 top-3" onPress={() => setShowPassword(!showPassword)}>
                   {showPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
@@ -79,46 +98,80 @@ export default function RegisterStepThreeScreen() {
             <View className="mb-4">
               <View className="flex-row items-center mb-2">
                 <View className={`w-4 h-4 rounded-full mr-2 ${hasMinLength ? "bg-green-500" : "bg-gray-300"}`}></View>
-                <Text className="text-gray-600 text-sm">Al menos 8 caracteres</Text>
+                <Text className={`text-sm ${hasMinLength ? "text-green-600" : "text-gray-600"}`}>
+                  Al menos 8 caracteres
+                </Text>
               </View>
-              <View className="flex-row items-center">
+              <View className="flex-row items-center mb-2">
                 <View className={`w-4 h-4 rounded-full mr-2 ${hasNumber ? "bg-green-500" : "bg-gray-300"}`}></View>
-                <Text className="text-gray-600 text-sm">Al menos un número</Text>
+                <Text className={`text-sm ${hasNumber ? "text-green-600" : "text-gray-600"}`}>Al menos un número</Text>
               </View>
+              {!showPassword && (
+                <View className="flex-row items-center">
+                  <View
+                    className={`w-4 h-4 rounded-full mr-2 ${
+                      bothPasswordsFilled ? (passwordsMatch ? "bg-green-500" : "bg-red-500") : "bg-gray-300"
+                    }`}
+                  ></View>
+                  <Text
+                    className={`text-sm ${
+                      bothPasswordsFilled ? (passwordsMatch ? "text-green-600" : "text-red-600") : "text-gray-600"
+                    }`}
+                  >
+                    Las contraseñas coinciden
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Repetir la contraseña */}
-            <View className="mb-4">
-              <Text className="text-gray-700 text-sm font-medium mb-2">Repita la contraseña</Text>
-              <View className="relative">
-                <TextInput
-                  secureTextEntry={!showConfirmPassword}
-                  className="w-full h-12 bg-white rounded-lg px-4 pr-12 text-black border border-gray-300"
-                  placeholder=""
-                  value={setupData?.confirmPassword || ""}
-                  onChangeText={(text) => setSetupData({ ...setupData, confirmPassword: text })}
-                />
-                <TouchableOpacity
-                  className="absolute right-3 top-3"
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
-                </TouchableOpacity>
+            {!showPassword && (
+              <View className="mb-4">
+                <Text className="text-gray-700 text-sm font-medium mb-2">Repita la contraseña</Text>
+                <View className="relative">
+                  <TextInput
+                    secureTextEntry={!showConfirmPassword}
+                    className={`w-full h-12 bg-white rounded-lg px-4 pr-12 text-black border ${
+                      bothPasswordsFilled && !passwordsMatch ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder=""
+                    value={setupData?.confirmPassword || ""}
+                    onChangeText={(text) => {
+                      setSetupData({ ...setupData, confirmPassword: text });
+                      if (showErrors) setShowErrors(false);
+                    }}
+                  />
+                  <TouchableOpacity
+                    className="absolute right-3 top-3"
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <Eye size={20} color="#9CA3AF" /> : <EyeOff size={20} color="#9CA3AF" />}
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
+            )}
+
+            {showErrors && (
+              <Text className="text-red-500 text-sm mt-2">
+                {!hasMinLength || !hasNumber
+                  ? "La contraseña debe cumplir con los requisitos"
+                  : !passwordsMatch
+                    ? "Las contraseñas no coinciden"
+                    : "Por favor, complete todos los campos correctamente"}
+              </Text>
+            )}
 
             {/* Register Button */}
             <TouchableOpacity
-              className={`w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center mt-8 ${
-                isLoading ? "opacity-80" : ""
+              className={`w-full h-12 rounded-lg flex items-center justify-center mt-8 ${
+                isLoading ? "opacity-80" : isFormValid ? "bg-blue-600" : "bg-gray-400"
               }`}
               onPress={handleRegister}
-              disabled={isLoading || !hasMinLength || !hasNumber}
+              disabled={isLoading || !isFormValid}
             >
               {isLoading ? (
                 <View className="flex-row items-center">
-                  <View className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full mr-2"></View>
-                  <Text className="text-white font-semibold text-base">Registrando...</Text>
+                  <CenteredSpinner color="#fff" />
                 </View>
               ) : (
                 <View className="flex-row items-center">

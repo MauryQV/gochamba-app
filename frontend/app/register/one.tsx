@@ -4,8 +4,7 @@ import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import { UserRound, Plus, Info } from "lucide-react-native";
 import Dropdown from "../../components/Dropdown";
 import { useRegister } from "./_register-context";
-import * as ImagePicker from "expo-image-picker";
-
+import { useUploadImage } from "./hooks/_use_upload_image";
 const departamentos = [
   "La Paz",
   "Cochabamba",
@@ -20,57 +19,51 @@ const departamentos = [
 
 export default function RegisterScreen() {
   const [isVisible, setIsVisible] = useState(true);
-  const [image, setImage] = useState<string | null>(null);
+  const [showErrors, setShowErrors] = useState(false);
 
   const { setup } = useLocalSearchParams();
   const { setupData, setSetupData } = useRegister();
   useEffect(() => {
     if (setup && !setupData) {
-      console.log("papichulo", setup);
       const dataObj = JSON.parse(setup as string);
-      setSetupData({ ...dataObj.user.perfil, email: dataObj.user.email });
       setSetupData({
-        userId: dataObj.user.id,
-        nombreCompleto: dataObj.user.perfil.nombreCompleto,
+        ...dataObj.user.perfil,
+        userId: dataObj.user.id || "",
+        nombreCompleto: dataObj.user.perfil.nombreCompleto || "",
         direccion: "",
         departamento: "",
         telefono: "",
         password: "",
         confirmPassword: "",
         fotoUrl: dataObj.user.perfil.fotoUrl || "",
-        email: dataObj.user.email,
+        email: dataObj.user.email || "",
         tiene_whatsapp: false,
         googleId: dataObj.user.googleId || null,
       });
     }
   }, [setup]);
 
-  const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    console.log(result);
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
-
   const router = useRouter();
+
+  const isFormValid =
+    setupData?.nombreCompleto &&
+    setupData?.nombreCompleto !== "" &&
+    setupData?.direccion &&
+    setupData?.direccion !== "" &&
+    setupData?.fotoUrl &&
+    setupData?.fotoUrl !== "" &&
+    setupData?.departamento &&
+    setupData?.departamento !== "";
+
   const handleContinue = () => {
-    // Handle continue logic
+    if (!isFormValid) {
+      setShowErrors(true);
+      return;
+    }
     router.push("/register/two");
   };
 
-  const handleImagePicker = () => {
-    // Handle image picker logic
-    console.log("Open image picker");
-  };
+  const { handleImagePicker } = useUploadImage(setSetupData);
 
   return (
     <View className="flex-1 bg-white">
@@ -101,34 +94,49 @@ export default function RegisterScreen() {
               <View className="relative">
                 <TouchableOpacity
                   onPress={handleImagePicker}
-                  className="w-24 h-24 bg-blue-100 rounded-full items-center justify-center"
+                  className={`w-24 h-24 rounded-full items-center justify-center ${
+                    showErrors && !setupData?.fotoUrl ? "bg-red-100 border-2 border-red-500" : "bg-blue-100"
+                  }`}
                 >
                   {setupData?.fotoUrl ? (
                     <Image src={setupData?.fotoUrl || ""} className="w-24 h-24 rounded-full" />
                   ) : (
                     <View className="items-center">
-                      <UserRound size={40} color="#60a5fa" />
+                      <UserRound size={40} color={showErrors && !setupData?.fotoUrl ? "#ef4444" : "#60a5fa"} />
                     </View>
                   )}
                 </TouchableOpacity>
 
-                {/* <TouchableOpacity onPress={pickImage}>
+                <TouchableOpacity onPress={handleImagePicker}>
                   <View className="absolute -bottom-1 right-0 w-6 h-6 bg-blue-500 rounded-full items-center justify-center">
                     <Plus size={12} color="white" />
                   </View>
-                </TouchableOpacity> */}
+                </TouchableOpacity>
               </View>
-              <Text className="text-orange-500 text-sm mt-2 font-medium">Agregar fotografía</Text>
+              <TouchableOpacity onPress={handleImagePicker}>
+                <Text
+                  className={`text-sm mt-2 font-medium ${
+                    showErrors && !setupData?.fotoUrl ? "text-red-500" : "text-orange-500"
+                  }`}
+                >
+                  {setupData?.fotoUrl ? "Cambiar fotografía" : "Agregar fotografía"}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* Nombre Completo */}
             <View className="mb-4">
               <Text className="text-gray-700 text-sm font-medium mb-2">Nombre Completo</Text>
               <TextInput
-                className="w-full h-12 bg-white rounded-lg px-4 text-black border border-gray-300"
+                className={`w-full h-12 bg-white rounded-lg px-4 text-black border ${
+                  showErrors && !setupData?.nombreCompleto ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder=""
                 value={setupData?.nombreCompleto || ""}
-                onChangeText={(text) => setSetupData({ ...setupData, nombreCompleto: text })}
+                onChangeText={(text) => {
+                  setSetupData({ ...setupData, nombreCompleto: text });
+                  if (showErrors) setShowErrors(false);
+                }}
                 autoCapitalize="words"
               />
             </View>
@@ -137,10 +145,15 @@ export default function RegisterScreen() {
             <View className="mb-4">
               <Text className="text-gray-700 text-sm font-medium mb-2">Dirección</Text>
               <TextInput
-                className="w-full h-12 bg-white rounded-lg px-4 text-black border border-gray-300"
+                className={`w-full h-12 bg-white rounded-lg px-4 text-black border ${
+                  showErrors && !setupData?.direccion ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder=""
                 value={setupData?.direccion || ""}
-                onChangeText={(text) => setSetupData({ ...setupData, direccion: text })}
+                onChangeText={(text) => {
+                  setSetupData({ ...setupData, direccion: text });
+                  if (showErrors) setShowErrors(false);
+                }}
               />
             </View>
 
@@ -150,14 +163,25 @@ export default function RegisterScreen() {
               placeholder="Seleccione un departamento"
               value={setupData?.departamento || ""}
               options={departamentos}
-              onSelect={(option) => setSetupData({ ...setupData, departamento: option })}
+              onSelect={(option) => {
+                setSetupData({ ...setupData, departamento: option });
+                if (showErrors) setShowErrors(false);
+              }}
               className=""
+              error={showErrors && !setupData?.departamento}
             />
+
+            {showErrors && (
+              <Text className="text-red-500 text-sm mt-2">Por favor, complete todos los campos requeridos</Text>
+            )}
 
             {/* Continue Button */}
             <TouchableOpacity
-              className="w-full h-12 bg-blue-600 rounded-lg flex items-center justify-center mt-8"
+              className={`w-full h-12 rounded-lg flex items-center justify-center mt-8 ${
+                isFormValid ? "bg-blue-600" : "bg-gray-400"
+              }`}
               onPress={handleContinue}
+              disabled={!isFormValid}
             >
               <View className="flex-row items-center">
                 <Text className="text-white font-semibold text-base mr-2">Siguiente</Text>
