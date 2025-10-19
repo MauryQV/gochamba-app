@@ -22,6 +22,9 @@ export const registerUserFinish = async (userData: any) => {
       delete presenter.googleId;
       response = await axios.post(`${BASE_URL}/user/create-user/`, presenter);
     } else {
+      delete presenter.email;
+      delete presenter.googleId;
+
       response = await axios.post(`${BASE_URL}/google/complete/`, presenter);
     }
     return response.data;
