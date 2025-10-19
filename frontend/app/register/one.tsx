@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from "react-native";
-import { Link, useRouter, useLocalSearchParams } from "expo-router";
-import { UserRound, Plus, Info } from "lucide-react-native";
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Modal } from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { UserRound, ChevronRight, Plus, Info, X } from "lucide-react-native";
 import Dropdown from "../../components/Dropdown";
 import { useRegister } from "./_register-context";
 import { useUploadImage } from "./hooks/_use_upload_image";
@@ -20,6 +20,7 @@ const departamentos = [
 export default function RegisterScreen() {
   const [isVisible, setIsVisible] = useState(true);
   const [showErrors, setShowErrors] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
   const { setup } = useLocalSearchParams();
   const { setupData, setSetupData } = useRegister();
@@ -75,20 +76,23 @@ export default function RegisterScreen() {
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 40 }}>
         <View className={`flex-1 justify-center px-8 ${isVisible ? "opacity-100" : "opacity-0"}`}>
-          <View className="mb-8">
-            <Text className="text-3xl font-semibold text-black mb-1">Registrarse en</Text>
-            <Text className="text-4xl font-black text-black mb-8">GoChamba</Text>
+          <View className="">
+            <Text className="text-3xl font-poppinsSemiBold text-black mb-1">Registrarse en</Text>
+            <Text className="text-5xl font-poppinsBlack text-black mb-8">GoChamba</Text>
 
-            <Text className="text-lg font-semibold text-black">Datos personales</Text>
+            <Text className="text-lg font-poppinsSemiBold text-black">Datos personales</Text>
           </View>
 
           <View className="space-y-6">
             {/* Profile Photo */}
             <View className="flex-row items-center mt-1">
-              <Text className="text-gray-700 text-sm font-medium">Fotografía</Text>
-              <View className="w-4 h-4 rounded-full items-center justify-center ml-1">
+              <Text className="text-gray-700 text-sm font-interMedium">Fotografía</Text>
+              <TouchableOpacity
+                onPress={() => setShowInfoModal(true)}
+                className="w-4 h-4 rounded-full items-center justify-center ml-1"
+              >
                 <Info size={16} strokeWidth={2.5} fill="#2563eb" color="white" />
-              </View>
+              </TouchableOpacity>
             </View>
             <View className="items-center mb-6">
               <View className="relative">
@@ -115,7 +119,7 @@ export default function RegisterScreen() {
               </View>
               <TouchableOpacity onPress={handleImagePicker}>
                 <Text
-                  className={`text-sm mt-2 font-medium ${
+                  className={`text-sm mt-2 font-interMedium ${
                     showErrors && !setupData?.fotoUrl ? "text-red-500" : "text-orange-500"
                   }`}
                 >
@@ -126,7 +130,7 @@ export default function RegisterScreen() {
 
             {/* Nombre Completo */}
             <View className="mb-4">
-              <Text className="text-gray-700 text-sm font-medium mb-2">Nombre Completo</Text>
+              <Text className="text-gray-700 text-sm font-interMedium mb-2">Nombre Completo</Text>
               <TextInput
                 className={`w-full h-12 bg-white rounded-lg px-4 text-black border ${
                   showErrors && !setupData?.nombreCompleto ? "border-red-500" : "border-gray-300"
@@ -143,7 +147,7 @@ export default function RegisterScreen() {
 
             {/* Dirección */}
             <View className="mb-4">
-              <Text className="text-gray-700 text-sm font-medium mb-2">Dirección</Text>
+              <Text className="text-gray-700 text-sm font-interMedium mb-2">Dirección</Text>
               <TextInput
                 className={`w-full h-12 bg-white rounded-lg px-4 text-black border ${
                   showErrors && !setupData?.direccion ? "border-red-500" : "border-gray-300"
@@ -184,13 +188,45 @@ export default function RegisterScreen() {
               disabled={!isFormValid}
             >
               <View className="flex-row items-center">
-                <Text className="text-white font-semibold text-base mr-2">Siguiente</Text>
-                <Text className="text-white text-lg">→</Text>
+                <Text className="text-white font-poppinsSemiBold text-base mr-1.5">Siguiente</Text>
+                <ChevronRight color="white" size={20} />
               </View>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
+
+      <Modal visible={showInfoModal} transparent animationType="fade" onRequestClose={() => setShowInfoModal(false)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowInfoModal(false)}
+          className="flex-1 bg-black/50 justify-center items-center px-8"
+        >
+          <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+            <View className="bg-white rounded-2xl w-full border border-gray-300 p-4" style={{ maxWidth: 340 }}>
+              <View className="flex-row justify-between items-center mb-4">
+                <View className="flex-row items-center flex-1">
+                  <View className="w-10 h-10 items-center justify-center mr-2">
+                    <UserRound size={20} color="#2563eb" />
+                  </View>
+                  <Text className="text-base font-poppinsSemiBold text-black flex-1">Fotografía de perfil</Text>
+                </View>
+              </View>
+
+              <Text className="text-gray-600 text-sm font-interRegular leading-5 mb-4">
+                Tu fotografía de perfil nos ayuda a verificar tu identidad y generar confianza en la comunidad de
+                GoChamba.
+              </Text>
+
+              <View className="rounded-xl p-3 mb-5">
+                <Text className="text-blue-700 text-sm font-interMedium">
+                  🔒 Tu información está segura y protegida
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

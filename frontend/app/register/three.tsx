@@ -64,17 +64,17 @@ export default function RegisterStepThreeScreen() {
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 40 }}>
         <View className={`flex-1 px-8 pt-4 ${isVisible ? "opacity-100" : "opacity-0"}`}>
-          <View className="mb-8">
-            <Text className="text-3xl font-semibold text-black mb-1">Registrarse en</Text>
-            <Text className="text-4xl font-black text-black mb-8">GoChamba</Text>
+          <View className="mb-6">
+            <Text className="text-3xl font-poppinsSemiBold text-black mb-1">Registrarse en</Text>
+            <Text className="text-5xl font-poppinsBlack text-black mb-8">GoChamba</Text>
 
-            <Text className="text-lg font-semibold text-black">Seguridad</Text>
+            <Text className="text-lg font-poppinsSemiBold text-black">Seguridad</Text>
           </View>
 
           <View className="space-y-6">
             {/* Contraseña */}
             <View className="mb-4">
-              <Text className="text-gray-700 text-sm font-medium mb-2">Contraseña</Text>
+              <Text className="text-gray-700 text-sm font-interMedium mb-2">Contraseña</Text>
               <View className="relative">
                 <TextInput
                   secureTextEntry={!showPassword}
@@ -98,13 +98,15 @@ export default function RegisterStepThreeScreen() {
             <View className="mb-4">
               <View className="flex-row items-center mb-2">
                 <View className={`w-4 h-4 rounded-full mr-2 ${hasMinLength ? "bg-green-500" : "bg-gray-300"}`}></View>
-                <Text className={`text-sm ${hasMinLength ? "text-green-600" : "text-gray-600"}`}>
+                <Text className={`text-sm font-inter ${hasMinLength ? "text-green-600" : "text-gray-600"}`}>
                   Al menos 8 caracteres
                 </Text>
               </View>
               <View className="flex-row items-center mb-2">
                 <View className={`w-4 h-4 rounded-full mr-2 ${hasNumber ? "bg-green-500" : "bg-gray-300"}`}></View>
-                <Text className={`text-sm ${hasNumber ? "text-green-600" : "text-gray-600"}`}>Al menos un número</Text>
+                <Text className={`text-sm font-inter ${hasNumber ? "text-green-600" : "text-gray-600"}`}>
+                  Al menos un número
+                </Text>
               </View>
               {!showPassword && (
                 <View className="flex-row items-center">
@@ -114,7 +116,7 @@ export default function RegisterStepThreeScreen() {
                     }`}
                   ></View>
                   <Text
-                    className={`text-sm ${
+                    className={`text-sm font-inter ${
                       bothPasswordsFilled ? (passwordsMatch ? "text-green-600" : "text-red-600") : "text-gray-600"
                     }`}
                   >
@@ -127,7 +129,7 @@ export default function RegisterStepThreeScreen() {
             {/* Repetir la contraseña */}
             {!showPassword && (
               <View className="mb-4">
-                <Text className="text-gray-700 text-sm font-medium mb-2">Repita la contraseña</Text>
+                <Text className="text-gray-700 text-sm font-interMedium mb-2">Repita la contraseña</Text>
                 <View className="relative">
                   <TextInput
                     secureTextEntry={!showConfirmPassword}
@@ -175,8 +177,8 @@ export default function RegisterStepThreeScreen() {
                 </View>
               ) : (
                 <View className="flex-row items-center">
-                  <Text className="text-white font-semibold text-base mr-2">Registrarse</Text>
-                  <Check size={20} color="white" />
+                  <Text className="text-white font-poppinsSemiBold text-base mr-2">Registrarse</Text>
+                  <Check color="white" size={20} strokeWidth="3" />
                 </View>
               )}
             </TouchableOpacity>

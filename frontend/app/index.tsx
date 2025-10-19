@@ -97,13 +97,13 @@ export default function IndexScreen() {
 
       <View className={`flex-1 justify-center px-8 ${isVisible ? "opacity-100" : "opacity-0"}`}>
         <View className="mb-16">
-          <Text className="text-5xl font-black text-black text-center mb-16">GoChamba</Text>
-          <Text className="text-3xl font-semibold text-black mb-2">Iniciar Sesión</Text>
+          <Text className="text-5xl font-poppinsBlack text-black text-center mb-16">GoChamba</Text>
+          <Text className="text-3xl font-poppinsSemiBold text-black mb-2">Iniciar Sesión</Text>
         </View>
 
         <View className="space-y-6">
           <View className="mb-4">
-            <Text className="text-gray-700 text-sm font-medium mb-2">Email</Text>
+            <Text className="text-gray-700 text-sm font-interMedium mb-2">Email</Text>
             <TextInput
               keyboardType="email-address"
               className={`w-full h-12 bg-gray-50 rounded-lg px-4 text-black border ${emailError ? "border-red-500" : "border-gray-200"}`}
@@ -115,7 +115,7 @@ export default function IndexScreen() {
           </View>
 
           <View>
-            <Text className="text-gray-700 text-sm font-medium mb-2">Contraseña</Text>
+            <Text className="text-gray-700 text-sm font-interMedium mb-2">Contraseña</Text>
             <View className="relative">
               <TextInput
                 secureTextEntry={!showPassword}
@@ -133,7 +133,7 @@ export default function IndexScreen() {
 
           <View className="items-end mt-2">
             <TouchableOpacity>
-              <Text className="text-gray-500 text-sm">¿Olvidaste tu contraseña?</Text>
+              <Text className="text-gray-500 font-inter text-sm">¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
           </View>
 
@@ -149,7 +149,7 @@ export default function IndexScreen() {
                 <SpinningLoader />
               </View>
             ) : (
-              <Text className="text-white font-semibold text-base">Ingresar</Text>
+              <Text className="text-white font-poppinsSemiBold text-base">Ingresar</Text>
             )}
           </TouchableOpacity>
 
@@ -172,17 +172,17 @@ export default function IndexScreen() {
               <>
                 <Image
                   source={require("./../assets/logo-google.png")}
-                  style={{ width: 20, height: 20, marginRight: 8 }}
+                  style={{ width: 15, height: 15, marginRight: 8 }}
                 />
-                <Text className="text-gray-700 font-medium">Continuar con Google</Text>
+                <Text className="text-gray-700 font-poppinsSemiBold text-base">Continuar con Google</Text>
               </>
             )}
           </TouchableOpacity>
 
-          <View className="flex-row items-center justify-center mt-8">
-            <Text className="text-gray-600">¿No tienes una cuenta? </Text>
+          <View className="flex-row items-center justify-center mt-4">
+            <Text className="text-gray-600 font-inter">¿No tienes una cuenta? </Text>
             <TouchableOpacity onPress={handleRegistration}>
-              <Text className="text-orange-500 font-semibold">Regístrate</Text>
+              <Text className="text-orange-500 font-poppinsSemiBold text-base">Regístrate</Text>
             </TouchableOpacity>
           </View>
         </View>

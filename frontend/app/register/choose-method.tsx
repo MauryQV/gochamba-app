@@ -51,19 +51,19 @@ export default function RegisterMainScreen() {
             {/* Google Sign Up Button */}
             <TouchableOpacity
               onPress={handleGoogleSignUp}
-              className="w-full h-12 bg-white border-2 border-blue-600 rounded-lg flex-row items-center justify-center mb-4"
+              className="w-full h-12 bg-white border border-blue-600 rounded-lg flex-row items-center justify-center mb-4"
             >
-              <Image source={require("./../../assets/logo-google.png")} style={{ width: 17, height: 17 }} />
-              <Text className="text-blue-600 font-interMedium ml-3">Continuar con Google</Text>
+              <Image source={require("./../../assets/logo-google.png")} style={{ width: 15, height: 15 }} />
+              <Text className="text-blue-600 text-base font-poppinsSemiBold ml-3">Registrarse con Google</Text>
             </TouchableOpacity>
 
             {/* Email Sign Up Button */}
             <TouchableOpacity
               onPress={handleEmailSignUp}
-              className="w-full h-12 bg-white border-2 border-blue-600 rounded-lg flex-row items-center justify-center"
+              className="w-full h-12 bg-white border border-blue-600 rounded-lg flex-row items-center justify-center"
             >
               <Mail color="#2563eb" height={18} width={18} className="mr-8" />
-              <Text className="text-blue-600 font-interMedium ml-3 ">Continuar con correo</Text>
+              <Text className="text-blue-600 text-base font-poppinsSemiBold ml-3">Registrarse con correo</Text>
             </TouchableOpacity>
           </View>
 

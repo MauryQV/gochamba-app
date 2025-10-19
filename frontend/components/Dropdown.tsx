@@ -125,7 +125,14 @@ export default function Dropdown({
 
   return (
     <View className={className}>
-      {label && <Text style={{ color: "#374151", fontSize: 13, fontWeight: "500", marginBottom: 8 }}>{label}</Text>}
+      {label && (
+        <Text
+          className="font-interMedium"
+          style={{ color: "#374151", fontSize: 13, fontWeight: "500", marginBottom: 8 }}
+        >
+          {label}
+        </Text>
+      )}
 
       {/* trigger button: keep ref on a native view */}
       <View ref={triggerRef} collapsable={false}>
@@ -145,7 +152,9 @@ export default function Dropdown({
             justifyContent: "space-between",
           }}
         >
-          <Text style={{ color: value ? "#000" : "#9CA3AF" }}>{value || placeholder}</Text>
+          <Text className="font-inter" style={{ color: value ? "#000" : "#9CA3AF" }}>
+            {value || placeholder}
+          </Text>
           <Animated.View style={{ transform: [{ rotate: rotation }] }}>
             <ChevronDown color="#9CA3AF" size={20} />
           </Animated.View>
@@ -207,6 +216,7 @@ export default function Dropdown({
                           }}
                         >
                           <Text
+                            className="font-interMedium"
                             style={{
                               color: isSelected ? "#1E40AF" : "#111827",
                               fontWeight: isSelected ? "600" : "400",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import { Link, useRouter } from "expo-router";
-import { Check } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { Check, ChevronRight } from "lucide-react-native";
 import { useRegister } from "./_register-context";
 
 export default function RegisterStepTwoScreen() {
@@ -33,16 +33,16 @@ export default function RegisterStepTwoScreen() {
 
         <View className={`flex-1 px-8 pt-4 `}>
           <View className="mb-8">
-            <Text className="text-3xl font-semibold text-black mb-1">Registrarse en</Text>
-            <Text className="text-4xl font-black text-black mb-8">GoChamba</Text>
+            <Text className="text-3xl font-poppinsSemiBold text-black mb-1">Registrarse en</Text>
+            <Text className="text-5xl font-poppinsBlack text-black mb-8">GoChamba</Text>
 
-            <Text className="text-lg font-semibold text-black">Datos de contacto</Text>
+            <Text className="text-lg font-poppinsSemiBold text-black">Datos de contacto</Text>
           </View>
 
           <View className="space-y-6">
             {/* Número de teléfono */}
             <View className="mb-4">
-              <Text className="text-gray-700 text-sm font-medium mb-2">Número de teléfono</Text>
+              <Text className="text-gray-700 text-sm font-interMedium mb-2">Número de teléfono</Text>
               <TextInput
                 className={`w-full h-12 bg-white rounded-lg px-4 text-black border ${
                   showErrors && !setupData?.telefono ? "border-red-500" : "border-gray-300"
@@ -68,13 +68,13 @@ export default function RegisterStepTwoScreen() {
                 >
                   {setupData?.tiene_whatsapp && <Check size={14} color="white" />}
                 </View>
-                <Text className="text-gray-700 text-sm">¿Tiene Whatsapp?</Text>
+                <Text className="text-gray-700 font-interMedium text-sm">¿Tiene Whatsapp?</Text>
               </TouchableOpacity>
             </View>
 
             {/* Email */}
             <View className="mb-4">
-              <Text className="text-gray-700 text-sm font-medium mb-2">Email</Text>
+              <Text className="text-gray-700 text-sm font-interMedium mb-2">Email</Text>
               {setupData?.googleId ? (
                 <TextInput
                   className={`w-full h-12 bg-gray-200 rounded-lg px-4 text-black border ${
@@ -114,8 +114,8 @@ export default function RegisterStepTwoScreen() {
               disabled={!isFormValid}
             >
               <View className="flex-row items-center">
-                <Text className="text-white font-semibold text-base mr-2">Siguiente</Text>
-                <Text className="text-white text-lg">→</Text>
+                <Text className="text-white font-poppinsSemiBold text-base mr-1.5">Siguiente</Text>
+                <ChevronRight color="white" size={20} />
               </View>
             </TouchableOpacity>
           </View>
