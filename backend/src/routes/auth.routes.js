@@ -19,14 +19,14 @@ router.post("/google/verify/", validateSchema(googleVerifySchema), verifyGoogleA
 //completar el registro de usuario con datos adicionales
 router.post("/google/complete/", validateSchema(googleCompleteSchema), completeGoogleRegistration);
 
-
+//registro normal de usuarios
 router.post("/user/create-user/", validateSchema(createUserSchema), createUserController);
 
-
+//login normal de usuario
 router.post("/user/login/",(validateSchema(loginUserSchema)), loginUserController);
 
-
-router.post("/user/upload-propfile-photo/",upload.single("imagen"), uploadImageController);
+//subir imagenes de perfil
+router.post("/user/upload-profile-photo/",upload.single("imagen"), uploadImageController);
 
 
 export default router;
