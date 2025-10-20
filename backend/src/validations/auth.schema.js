@@ -15,10 +15,17 @@ export const googleCompleteSchema = Joi.object({
     "Pando",
     "Chuquisaca"
   ).required(),
-  telefono: Joi.string().pattern(/^[0-9]{7,10}$/).required(),
+   telefono: Joi.string()
+    .pattern(/^[0-9]{7,10}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Solo se aceptan caracteres numéricos',
+      'string.empty': 'El teléfono es requerido',
+      'any.required': 'El teléfono es requerido'
+    }),
   tiene_whatsapp: Joi.boolean().required(),
   password: Joi.string().min(6).optional(),
-    confirmPassword: Joi.string().min(6).optional().equal(Joi.ref(password)),
+  confirmPassword: Joi.string().min(6).optional().equal(Joi.ref('password')),
   fotoUrl: Joi.string().uri().optional(),
 });
 
@@ -41,10 +48,17 @@ export const createUserSchema = Joi.object({
     "Pando",
     "Chuquisaca"
   ).required(),
-  telefono: Joi.string().pattern(/^[0-9]{7,10}$/).required(),
+   telefono: Joi.string()
+    .pattern(/^[0-9]{7,10}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Solo se aceptan caracteres numéricos',
+      'string.empty': 'El teléfono es requerido',
+      'any.required': 'El teléfono es requerido'
+    }),
   tiene_whatsapp: Joi.boolean().required(),
   password: Joi.string().min(6).optional(),
-  confirmPassword: Joi.string().min(6).optional().equal(Joi.ref(password)),
+  confirmPassword: Joi.string().min(6).optional().equal(Joi.ref('password')),
   fotoUrl: Joi.string().uri().optional(),
 });
 
