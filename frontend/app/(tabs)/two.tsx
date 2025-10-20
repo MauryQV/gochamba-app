@@ -82,7 +82,9 @@ export default function TwoScreen() {
       console.error("Error signing out: ", error);
     }
   };
-
+  const handleRegisterasWorker = () => {
+    router.push("/register-worker");
+  };
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false}>
@@ -91,7 +93,7 @@ export default function TwoScreen() {
           <MenuItem
             icon={<Hammer size={22} color="white" />}
             title="Registrarse como trabajador"
-            onPress={() => console.log("Registrarse como trabajador")}
+            onPress={() => handleRegisterasWorker()}
           />
 
           {/* <MenuItem

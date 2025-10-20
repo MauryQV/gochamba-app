@@ -12,6 +12,7 @@ export type setupData = {
   email: string | null;
   tiene_whatsapp: boolean;
   googleId: string | null;
+  token: string | null;
 };
 type RegisterContextType = {
   setupData: any;

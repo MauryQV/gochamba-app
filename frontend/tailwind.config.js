@@ -13,6 +13,7 @@ module.exports = {
         inter: ["Inter_400Regular"],
         interMedium: ["Inter_500Medium"],
         interBold: ["Inter_700Bold"],
+        bebasNeue: ["BebasNeue_400Regular"],
       },
     },
   },

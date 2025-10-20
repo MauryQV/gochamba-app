@@ -2,15 +2,20 @@ import { useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "@/constants";
 import { useRouter } from "expo-router";
+import { useRegister } from "../_register-context";
+
 export const useLogin = () => {
   const router = useRouter();
+  const { setSetupData } = useRegister();
   const [errors, setErrors] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async (email: string, password: string) => {
     try {
       setIsSubmitting(true);
-      await axios.post(`${BASE_URL}/user/login`, { email: email, password: password });
+      const res = await axios.post(`${BASE_URL}/user/login`, { email: email, password: password });
+      console.log(res.data.token);
+      setSetupData({ token: res.data.token });
       router.replace("/one");
     } catch (error) {
       if (axios.isAxiosError(error)) {

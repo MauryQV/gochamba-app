@@ -8,9 +8,11 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "../../../constants";
+import { useRegister } from "../_register-context";
 
 export const useGoogleAuth = () => {
   const router = useRouter();
+  const { setSetupData } = useRegister();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const sendTokenToBackend = async (idToken: string) => {
     try {
@@ -32,11 +34,13 @@ export const useGoogleAuth = () => {
         const { idToken, user } = response.data;
         const res = await sendTokenToBackend(idToken || "");
         if (res?.needsSetup) {
+          setSetupData({ ...res, token: res?.token });
           router.push({
             pathname: "/register/one",
             params: { setup: JSON.stringify(res) },
           });
         } else {
+          setSetupData({ token: res?.token });
           router.push("/one");
         }
       } else {

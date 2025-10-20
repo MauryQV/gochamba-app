@@ -1,6 +1,6 @@
 import axios from "axios";
 import { BASE_URL } from "./../../constants";
-
+import type { RegisterWorker } from "../models/register";
 export const registerUserFinish = async (userData: any) => {
   const presenter = {
     userId: userData.userId,
@@ -30,6 +30,19 @@ export const registerUserFinish = async (userData: any) => {
     return response.data;
   } catch (error) {
     console.error("Error registering user:", error);
+    throw error;
+  }
+};
+export const registerWorker = async (workerData: RegisterWorker, token: string) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/worker/register-worker`, workerData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error registering worker:", error);
     throw error;
   }
 };
