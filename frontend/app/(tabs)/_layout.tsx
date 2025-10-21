@@ -1,10 +1,11 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs } from "expo-router";
 import React from "react";
-import { House, Settings2 } from "lucide-react-native";
+import { House, Settings2, Hammer } from "lucide-react-native";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useRegister } from "../register/_register-context";
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>["name"]; color: string }) {
@@ -13,6 +14,8 @@ function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>["nam
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { setupData } = useRegister();
+  const isWorker = setupData?.rol?.includes("TRABAJADOR");
 
   return (
     <Tabs
@@ -36,6 +39,14 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => <House size={28} style={{ marginBottom: -3 }} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="worker"
+        options={{
+          title: "Servicios",
+          tabBarIcon: ({ color }) => <Hammer size={28} style={{ marginBottom: -3 }} color={color} />,
+          href: isWorker ? "/(tabs)/worker" : null,
         }}
       />
       <Tabs.Screen

@@ -6,6 +6,7 @@ import {
   ArrowUpFromLine,
   Lock,
   Shield,
+  HardHat,
   ShieldCheck,
   History,
   Hammer,
@@ -22,7 +23,7 @@ import {
 } from "lucide-react-native";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useRouter } from "expo-router";
-
+import { useRegister } from "../register/_register-context";
 interface MenuItemProps {
   icon: React.ReactNode;
   title: string;
@@ -31,15 +32,27 @@ interface MenuItemProps {
   badgeText?: string;
   badgeColor?: string;
   onPress: () => void;
+  colorBgIcon?: string;
 }
 
-const MenuItem = ({ icon, title, subtitle, showBadge, badgeText, badgeColor, onPress }: MenuItemProps) => (
+const MenuItem = ({
+  icon,
+  title,
+  subtitle,
+  showBadge,
+  badgeText,
+  badgeColor,
+  onPress,
+  colorBgIcon = "",
+}: MenuItemProps) => (
   <TouchableOpacity
     onPress={onPress}
-    className="bg-gray-50 rounded-2xl px-4 py-4 flex-row items-center mb-3 border border-gray-200"
+    className={`rounded-2xl px-4 py-4 flex-row items-center mb-3 border border-gray-200`}
     activeOpacity={0.7}
   >
-    <View className="w-10 h-10 bg-blue-600 rounded-xl items-center justify-center mr-4">{icon}</View>
+    <View className={`w-10 h-10 rounded-xl items-center justify-center mr-4 ${colorBgIcon || "bg-blue-600"} `}>
+      {icon}
+    </View>
     <View className="flex-1">
       <Text className="text-gray-900 text-base font-interSemiBold">{title}</Text>
       {subtitle && (
@@ -72,9 +85,11 @@ const Section = ({ title, children }: SectionProps) => (
 export default function TwoScreen() {
   const router = useRouter();
 
+  const { setupData, setSetupData } = useRegister();
   const signout = async () => {
     try {
       await GoogleSignin.signOut();
+      setSetupData(null);
       router.push("/");
       console.log("signed out");
     } catch (error) {
@@ -90,11 +105,21 @@ export default function TwoScreen() {
       <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false}>
         <Section title="Administrar cuenta">
           <MenuItem icon={<User size={22} color="white" />} title="Perfil" onPress={() => console.log("Perfil")} />
-          <MenuItem
-            icon={<Hammer size={22} color="white" />}
-            title="Registrarse como trabajador"
-            onPress={() => handleRegisterasWorker()}
-          />
+
+          {setupData && setupData.rol?.includes("TRABAJADOR") ? (
+            <MenuItem
+              icon={<HardHat size={22} color="white" />}
+              title="Perfil de trabajador"
+              onPress={() => console.log("Perfil")}
+            />
+          ) : (
+            <MenuItem
+              icon={<Hammer size={22} color="white" />}
+              title="Registrarse como trabajador"
+              onPress={() => handleRegisterasWorker()}
+              colorBgIcon="bg-orange-500"
+            />
+          )}
 
           {/* <MenuItem
             icon={<ArrowUpFromLine size={22} color="white" />}
@@ -121,9 +146,9 @@ export default function TwoScreen() {
           <MenuItem
             icon={<Shield size={22} color="white" />}
             title="Configuración de seguridad"
-            subtitle="Confirmar email"
+            // subtitle="Confirmar email"
             showBadge={true}
-            badgeText="⚠"
+            // badgeText="⚠"
             badgeColor="bg-orange-500"
             onPress={() => console.log("Security settings")}
           />
@@ -147,10 +172,10 @@ export default function TwoScreen() {
           />
         </Section> */}
 
-        <Section title="App settings">
+        <Section title="Configuración de la aplicación">
           <MenuItem
             icon={<Bell size={22} color="white" />}
-            title="Notifications"
+            title="Notificaciones"
             onPress={() => console.log("Notifications")}
           />
           {/* <MenuItem
@@ -173,7 +198,7 @@ export default function TwoScreen() {
           activeOpacity={0.8}
         >
           <LogOut size={22} color="white" strokeWidth={3} />
-          <Text className="text-white text-base font-poppinsBold ml-3">Sign out</Text>
+          <Text className="text-white text-base font-poppinsBold ml-3">Cerrar Sesión</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

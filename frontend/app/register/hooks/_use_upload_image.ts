@@ -28,7 +28,7 @@ const uploadPhoto = async (uri: string): Promise<string> => {
   } as any); // 'as any' needed for React Native FormData
 
   try {
-    const response = await axios.post(`${BASE_URL}/user/upload-propfile-photo`, formData, {
+    const response = await axios.post(`${BASE_URL}/user/upload-profile-photo`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

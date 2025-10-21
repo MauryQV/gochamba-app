@@ -4,6 +4,11 @@ import { BASE_URL } from "@/constants";
 import { useRouter } from "expo-router";
 import { useRegister } from "../_register-context";
 
+type Rol = {
+  id: string;
+  usuarioId: string;
+  rol: string;
+};
 export const useLogin = () => {
   const router = useRouter();
   const { setSetupData } = useRegister();
@@ -12,10 +17,12 @@ export const useLogin = () => {
 
   const handleLogin = async (email: string, password: string) => {
     try {
+      console.log("ya pe oy");
+
       setIsSubmitting(true);
       const res = await axios.post(`${BASE_URL}/user/login`, { email: email, password: password });
-      console.log(res.data.token);
-      setSetupData({ token: res.data.token });
+      setSetupData({ ...res.data, token: res.data.token, rol: res?.data.user?.roles[0]?.map((item: Rol) => item.rol) });
+      console.log("ya pe oy");
       router.replace("/one");
     } catch (error) {
       if (axios.isAxiosError(error)) {

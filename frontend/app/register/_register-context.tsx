@@ -13,6 +13,7 @@ export type setupData = {
   tiene_whatsapp: boolean;
   googleId: string | null;
   token: string | null;
+  rol: string[];
 };
 type RegisterContextType = {
   setupData: any;
