@@ -150,7 +150,6 @@ if (existingPhone) {
     return [createdUser];
   });
 
-  // Generar token
   const token = generateAppToken(user.id);
 
   return { user, token };
@@ -158,9 +157,13 @@ if (existingPhone) {
 
 
 export const loginUserService = async (email, password) => {
+  // Buscar usuario con su perfil y roles
   const user = await prisma.usuario.findUnique({
     where: { email },
-    include: { perfil: true },
+    include: {
+      perfil: true,
+      roles: true
+    },
   });
 
   if (!user) {
@@ -168,15 +171,31 @@ export const loginUserService = async (email, password) => {
   }
   if (!user.password) {
     throw new Error(
-      "El correo electronico esta registrado con una cuenta de Google."
+      "El correo electrónico está registrado mediante una cuenta de Google."
     );
   }
+
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new Error("Contraseña incorrecta.");
   }
 
+  // Generar token
   const token = generateAppToken(user.id);
+
+  // Verificar si el usuario tiene el rol de TRABAJADOR
+  const es_trabajador = user.roles.some((rol) => rol.rol === "TRABAJADOR");
+
+  // Limpiar datos sensibles
   const { password: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword, token };
-}; 
+
+  // Retornar datos finales
+  return {
+    user: {
+      ...userWithoutPassword,
+      es_trabajador, 
+    },
+    token,
+  };
+};
+
