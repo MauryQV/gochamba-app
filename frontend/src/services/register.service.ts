@@ -20,12 +20,12 @@ export const registerUserFinish = async (userData: any) => {
     if (presenter.googleId === null) {
       delete presenter.userId;
       delete presenter.googleId;
-      response = await axios.post(`http://pipexapp.com:8100/api/user/create-user/`, presenter);
+      response = await axios.post(`https://pipexapp.com:8100/api/user/create-user/`, presenter);
     } else {
       delete presenter.email;
       delete presenter.googleId;
 
-      response = await axios.post(`http://pipexapp.com:8100/api/google/complete/`, presenter);
+      response = await axios.post(`https://pipexapp.com:8100/api/google/complete/`, presenter);
     }
     return response.data;
   } catch (error) {
@@ -35,7 +35,7 @@ export const registerUserFinish = async (userData: any) => {
 };
 export const registerWorker = async (workerData: RegisterWorker, token: string) => {
   try {
-    const response = await axios.post(`http://pipexapp.com:8100/api/worker/register-worker`, workerData, {
+    const response = await axios.post(`https://pipexapp.com:8100/api/worker/register-worker`, workerData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

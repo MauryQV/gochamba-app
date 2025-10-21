@@ -22,7 +22,7 @@ export const useGoogleAuth = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const sendTokenToBackend = async (idToken: string) => {
     try {
-      const response = await axios.post(`http://pipexapp.com:8100/api/google/verify`, {
+      const response = await axios.post(`https://pipexapp.com:8100/api/google/verify`, {
         id_token: idToken,
       });
       return response.data;

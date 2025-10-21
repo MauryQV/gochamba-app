@@ -28,7 +28,7 @@ const uploadPhoto = async (uri: string): Promise<string> => {
   } as any); // 'as any' needed for React Native FormData
 
   try {
-    const response = await axios.post(`http://pipexapp.com:8100/api/user/upload-profile-photo`, formData, {
+    const response = await axios.post(`https://pipexapp.com:8100/api/user/upload-profile-photo`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
