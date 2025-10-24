@@ -1,1 +1,1 @@
-export const BASE_URL = "http://pipexapp.com:8100/api";
+export const BASE_URL = "https://gochambaapp-production.up.railway.app/api";
