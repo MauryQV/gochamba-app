@@ -58,3 +58,8 @@ export const registerWorkerService = async (usuarioId, data) => {
 
   return result;
 };
+
+export const createPublicationService = async() => {
+
+  
+}
