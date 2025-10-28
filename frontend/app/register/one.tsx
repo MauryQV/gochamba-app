@@ -25,7 +25,7 @@ export default function RegisterScreen() {
   const { setup } = useLocalSearchParams();
   const { setupData, setSetupData } = useRegister();
   useEffect(() => {
-    if (setup && !setupData) {
+    if (setup) {
       const dataObj = JSON.parse(setup as string);
       setSetupData({
         ...dataObj.user.perfil,

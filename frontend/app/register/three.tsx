@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Check, Eye, EyeOff } from "lucide-react-native";
 import { useRegister } from "./_register-context";
 import { registerUserFinish } from "@/src/services/register.service";
 import CenteredSpinner from "@/components/Spinner";
+import axios from "axios";
 
 export default function RegisterStepThreeScreen() {
   const navigator = useRouter();
@@ -47,8 +48,12 @@ export default function RegisterStepThreeScreen() {
       await registerUserFinish(setupData);
       navigator.push("/one");
     } catch (error) {
-      console.error("Error registering user:", error);
-      alert("Error registering user");
+      if (axios.isAxiosError(error)) {
+        console.error("Error registering user:", error.response?.data.error);
+        Alert.alert("Error", error.response?.data.error || "Error registering user");
+      } else {
+        Alert.alert("Error", "Error registering user");
+      }
     } finally {
       setIsLoading(false);
     }

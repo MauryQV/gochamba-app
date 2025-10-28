@@ -7,10 +7,12 @@ import { useRegister } from "./_register-context";
 export default function RegisterStepTwoScreen() {
   const { setupData, setSetupData } = useRegister();
   const [showErrors, setShowErrors] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
 
   const navigator = useRouter();
 
-  const isFormValid = setupData?.telefono && setupData?.telefono !== "" && setupData?.email && setupData?.email !== "";
+  const isFormValid =
+    setupData?.telefono && setupData?.telefono !== "" && setupData?.email && setupData?.email !== "" && !phoneError;
 
   const handleContinue = () => {
     if (!isFormValid) {
@@ -45,16 +47,30 @@ export default function RegisterStepTwoScreen() {
               <Text className="text-gray-700 text-sm font-interMedium mb-2">Número de teléfono</Text>
               <TextInput
                 className={`w-full h-12 bg-white rounded-lg px-4 text-black border ${
-                  showErrors && !setupData?.telefono ? "border-red-500" : "border-gray-300"
+                  (showErrors && !setupData?.telefono) || phoneError ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder=""
                 value={setupData?.telefono || ""}
                 onChangeText={(text) => {
+                  // Check if input contains only digits
+                  if (text && !/^\d*$/.test(text)) {
+                    setPhoneError("Solo se permiten números (0-9)");
+                    return;
+                  }
+
+                  // Check if length exceeds 8
+                  if (text.length > 8) {
+                    setPhoneError("No puede tener más de 8 caracteres");
+                    return;
+                  }
+
+                  setPhoneError("");
                   setSetupData({ ...setupData, telefono: text });
                   if (showErrors) setShowErrors(false);
                 }}
                 keyboardType="phone-pad"
               />
+              {phoneError && <Text className="text-red-500 text-xs mt-1">{phoneError}</Text>}
             </View>
 
             {/* WhatsApp Checkbox */}
