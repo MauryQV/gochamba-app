@@ -1,103 +1,205 @@
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from "react-native";
-import { use, useState } from "react";
-import { ChevronDown } from "lucide-react-native";
-export default function TwoScreen() {
-  const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
-  const [ShowCategories, setShowCategories] = useState(false);
-  const [price, setPrice] = useState("");
-  const categories = ["Plomería", "Electricidad", "Carpintería", "Limpieza", "Jardinería"];
-  const servicios = [
-    {
-      id: 1,
-      title: "Reparación de Fugas",
-      category: "Plomería",
-      trabajador: "Juan Pérez",
-      ubicacion: "Av. Principal 123, Cochabamba",
-      //imagenes: [
-      // require("./../frontend/assets/plomeria1.jpg"),
-      // require("./../frontend/assets/plomeria2.jpg"),
-      // ],
-    },
-    {
-      id: 2,
-      title: "Instalación Eléctrica",
-      category: "Electricidad",
-      trabajador: "María López",
-      ubicacion: "Calle Aroma, esquina con Av. Siempre Viva",
-      //imagenes: [
-      //require("../../assets/electricidad1.jpg"),
-      //require("../../assets/electricidad2.jpg"),
-      //],
-    },
-  ];
-  return (
-    <View className="flex-1 bg-white">
-      {/* Encabezado */}
-      <View className="bg-blue-600 py-6">
-        <Text className="text-3xl font-black text-center text-black">GoChamba</Text>
-      </View>
-      {/* Decorative circles at bottom */}
-      <View className="absolute bottom-0 right-0">
-        <View className="w-40 h-40 bg-blue-600 rounded-full absolute -bottom-20 -right-10"></View>
-        <View className="w-32 h-32 bg-orange-500 rounded-full absolute -bottom-16 right-20"></View>
-      </View>
-      {/* Filtros */}
-      <View className="flex-row px-4 mt-4 space-x-3">
-        {/* Categoría */}
-        <View className="flex-1 relative">
-          <TouchableOpacity
-            className="h-12 bg-gray-100 border border-gray-300 rounded-lg flex-row items-center justify-between px-3"
-            onPress={() => setShowCategories(!ShowCategories)}
-          >
-            <Text className="text-gray-700">{selectedCategory}</Text>
-            <ChevronDown size={18} color="#555" />
-          </TouchableOpacity>
-          {ShowCategories && (
-            <View className="absolute w-full bg-white rounded-lg border border-gray-300 mt-1 z-10">
-              {categories.map((cat, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  className="px-3 py-2 border-b border-gray-200"
-                  onPress={() => {
-                    setSelectedCategory(cat);
-                    setShowCategories(false);
-                  }}
-                >
-                  <Text>{cat}</Text>
-                </TouchableOpacity>
-              ))}
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { useState } from "react";
+import {
+  Wallet,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Lock,
+  Shield,
+  HardHat,
+  ShieldCheck,
+  History,
+  Hammer,
+  Settings,
+  MousePointerClick,
+  User,
+  Bell,
+  Globe,
+  Moon,
+  LogOut,
+  ChevronRight,
+  X,
+  AlertCircle,
+} from "lucide-react-native";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { useRouter } from "expo-router";
+import { useRegister } from "../register/_register-context";
+interface MenuItemProps {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  showBadge?: boolean;
+  badgeText?: string;
+  badgeColor?: string;
+  onPress: () => void;
+  colorBgIcon?: string;
+}
+
+const MenuItem = ({
+  icon,
+  title,
+  subtitle,
+  showBadge,
+  badgeText,
+  badgeColor,
+  onPress,
+  colorBgIcon = "",
+}: MenuItemProps) => (
+  <TouchableOpacity
+    onPress={onPress}
+    className={`rounded-2xl px-4 py-4 flex-row items-center mb-3 border border-gray-200`}
+    activeOpacity={0.7}
+  >
+    <View className={`w-10 h-10 rounded-xl items-center justify-center mr-4 ${colorBgIcon || "bg-blue-600"} `}>
+      {icon}
+    </View>
+    <View className="flex-1">
+      <Text className="text-gray-900 text-base font-interSemiBold">{title}</Text>
+      {subtitle && (
+        <View className="flex-row items-center mt-1">
+          {showBadge && (
+            <View className={`rounded-full px-2 py-0.5 mr-2 ${badgeColor || "bg-red-500"}`}>
+              <Text className="text-white text-xs font-interMedium">{badgeText}</Text>
             </View>
           )}
+          <Text className="text-gray-500 text-sm font-interRegular">{subtitle}</Text>
         </View>
-        {/* Precio */}
-        <TextInput
-          className="w-28 h-12 bg-gray-100 border border-gray-300 rounded-lg px-3"
-          placeholder="Precio"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
-      </View>
-      {/* Lista de servicios */}
-      <ScrollView className="mt-6 px-4">
-        {servicios.map((s) => (
-          <View key={s.id} className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm">
-            {/* Header */}
-            <View className="flex-row items-center mb-3">
-              <View>
-                <Text className="text-lg font-semibold text-blue-600">{s.title}</Text>
-                <Text className="text-gray-700 text-sm">Categoría: {s.category}</Text>
-                {s.trabajador && <Text className="text-gray-700 text-sm">Trabajador: {s.trabajador}</Text>}
-                {s.ubicacion && <Text className="text-gray-700 text-sm">Ubicación: {s.ubicacion}</Text>}
-              </View>
-            </View>
+      )}
+    </View>
+    <ChevronRight size={20} color="#9CA3AF" />
+  </TouchableOpacity>
+);
 
-            {/* Botón */}
-            <TouchableOpacity className="bg-blue-600 py-2 rounded-lg items-center">
-              <Text className="text-white font-semibold">Solicitar servicio</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const Section = ({ title, children }: SectionProps) => (
+  <View className="mb-6">
+    <Text className="text-gray-700 text-sm font-poppinsSemiBold mb-3 px-1">{title}</Text>
+    {children}
+  </View>
+);
+
+export default function TwoScreen() {
+  const router = useRouter();
+
+  const { setupData, setSetupData } = useRegister();
+  const signout = async () => {
+    try {
+      await GoogleSignin.signOut();
+      setSetupData(null);
+      router.push("/");
+      console.log("signed out");
+    } catch (error) {
+      alert("Error: Intente de nuevo");
+      console.error("Error signing out: ", error);
+    }
+  };
+  const handleRegisterasWorker = () => {
+    router.push("/register-worker");
+  };
+  return (
+    <View className="flex-1 bg-white">
+      <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false}>
+        <Section title="Administrar cuenta">
+          <MenuItem icon={<User size={22} color="white" />} title="Perfil" onPress={() => console.log("Perfil")} />
+
+          {setupData && setupData.rol?.includes("TRABAJADOR") ? (
+            <MenuItem
+              icon={<HardHat size={22} color="white" />}
+              title="Perfil de trabajador"
+              onPress={() => console.log("Perfil")}
+            />
+          ) : (
+            <MenuItem
+              icon={<Hammer size={22} color="white" />}
+              title="Registrarse como trabajador"
+              onPress={() => handleRegisterasWorker()}
+              colorBgIcon="bg-orange-500"
+            />
+          )}
+
+          {/* <MenuItem
+            icon={<ArrowUpFromLine size={22} color="white" />}
+            title="Withdraw"
+            onPress={() => console.log("Withdraw")}
+          /> */}
+        </Section>
+
+        <Section title="Seguridad">
+          {/* <MenuItem
+            icon={<Lock size={22} color="white" />}
+            title="PIN code and biometrics"
+            onPress={() => console.log("PIN code")}
+          /> */}
+          {/* <MenuItem
+            icon={<ShieldCheck size={22} color="white" />}
+            title="Authenticator"
+            subtitle="Not enabled"
+            showBadge={true}
+            badgeText="✕"
+            badgeColor="bg-red-500"
+            onPress={() => console.log("Authenticator")}
+          /> */}
+          <MenuItem
+            icon={<Shield size={22} color="white" />}
+            title="Configuración de seguridad"
+            // subtitle="Confirmar email"
+            showBadge={true}
+            // badgeText="⚠"
+            badgeColor="bg-orange-500"
+            onPress={() => console.log("Security settings")}
+          />
+          {/* <MenuItem
+            icon={<History size={22} color="white" />}
+            title="Historial de inicio de sesión"
+            onPress={() => console.log("Historial de inicio de sesión")}
+          /> */}
+        </Section>
+
+        {/* <Section title="Bet settings">
+          <MenuItem
+            icon={<Settings size={22} color="white" />}
+            title="Bet settings"
+            onPress={() => console.log("Bet settings")}
+          />
+          <MenuItem
+            icon={<MousePointerClick size={22} color="white" />}
+            title="One-click bet"
+            onPress={() => console.log("One-click bet")}
+          />
+        </Section> */}
+
+        <Section title="Configuración de la aplicación">
+          <MenuItem
+            icon={<Bell size={22} color="white" />}
+            title="Notificaciones"
+            onPress={() => console.log("Notifications")}
+          />
+          {/* <MenuItem
+            icon={<Globe size={22} color="white" />}
+            title="Language"
+            subtitle="English"
+            onPress={() => console.log("Language")}
+          />
+          <MenuItem
+            icon={<Moon size={22} color="white" />}
+            title="Dark mode"
+            subtitle="Enabled"
+            onPress={() => console.log("Dark mode")}
+          /> */}
+        </Section>
+
+        <TouchableOpacity
+          onPress={signout}
+          className="bg-red-600 rounded-2xl px-4 py-4 flex-row items-center justify-center mb-8"
+          activeOpacity={0.8}
+        >
+          <LogOut size={22} color="white" strokeWidth={3} />
+          <Text className="text-white text-base font-poppinsBold ml-3">Cerrar Sesión</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );

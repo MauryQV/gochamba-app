@@ -14,7 +14,9 @@ import {
   Poppins_900Black,
   Poppins_600SemiBold,
 } from "@expo-google-fonts/poppins";
+import { BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
 import { Inter_400Regular, Inter_500Medium, Inter_700Bold } from "@expo-google-fonts/inter";
+import { RegisterProvider } from "./register/_register-context";
 
 import { useColorScheme } from "@/components/useColorScheme";
 
@@ -43,6 +45,7 @@ export default function RootLayout() {
     Inter_400Regular,
     Inter_500Medium,
     Inter_700Bold,
+    BebasNeue_400Regular,
   });
   useEffect(() => {
     GoogleSignin.configure({
@@ -66,7 +69,11 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav />;
+  return (
+    <RegisterProvider>
+      <RootLayoutNav />
+    </RegisterProvider>
+  );
 }
 
 function RootLayoutNav() {
@@ -90,6 +97,8 @@ function RootLayoutNav() {
           headerTitleAlign: "center",
         }}
       >
+        <Stack.Screen name="register-worker" options={{ title: "Registrarse (Trabajadores)" }} />
+
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: "modal" }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />

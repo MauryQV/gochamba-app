@@ -5,7 +5,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from "reac
 import { useState } from "react";
 
 import { ChevronDown } from "lucide-react-native";
-export default function TabOneScreen() {
+export default function WorkerTab() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
   const [ShowCategories, setShowCategories] = useState(false);
   const [price, setPrice] = useState("");

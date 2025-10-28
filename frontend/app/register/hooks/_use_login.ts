@@ -2,15 +2,27 @@ import { useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "@/constants";
 import { useRouter } from "expo-router";
+import { useRegister } from "../_register-context";
+
+type Rol = {
+  id: string;
+  usuarioId: string;
+  rol: string;
+};
 export const useLogin = () => {
   const router = useRouter();
+  const { setSetupData } = useRegister();
   const [errors, setErrors] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async (email: string, password: string) => {
     try {
+      console.log("ya pe oy");
+
       setIsSubmitting(true);
-      await axios.post(`${BASE_URL}/user/login`, { email: email, password: password });
+      const res = await axios.post(`${BASE_URL}/user/login`, { email: email, password: password });
+      setSetupData({ ...res.data, token: res.data.token, rol: res?.data.user?.roles[0]?.map((item: Rol) => item.rol) });
+      console.log("ya pe oy");
       router.replace("/one");
     } catch (error) {
       if (axios.isAxiosError(error)) {
