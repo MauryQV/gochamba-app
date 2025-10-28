@@ -21,8 +21,12 @@ export const useLogin = () => {
 
       setIsSubmitting(true);
       const res = await axios.post(`${BASE_URL}/user/login`, { email: email, password: password });
-      setSetupData({ ...res.data, token: res.data.token, rol: res?.data.user?.roles[0]?.map((item: Rol) => item.rol) });
-      console.log("ya pe oy");
+      const rolArray = res?.data?.user?.roles?.map((item: Rol) => item.rol);
+      setSetupData({
+        ...res.data,
+        token: res.data.token,
+        rol: rolArray,
+      });
       router.replace("/one");
     } catch (error) {
       if (axios.isAxiosError(error)) {

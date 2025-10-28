@@ -64,8 +64,7 @@ export default function IndexScreen() {
       setErrors("Debe llenar los campos");
       return;
     }
-
-    await handleLogin(email, password);
+    await handleLogin(email.toLowerCase(), password);
   };
 
   const handleEmailChange = (text: string) => {
