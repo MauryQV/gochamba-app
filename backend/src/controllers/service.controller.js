@@ -1,4 +1,4 @@
-import { getAllServices } from "../services/service.service.js";
+import { getAllServices} from "../services/service.service.js";
 
 
 export const getAllServicesController = async (req, res) => {
@@ -9,3 +9,5 @@ export const getAllServicesController = async (req, res) => {
     catch(error){}
     res.error(500).json({error: "Error al obtener los oficios"});
     }
+
+
