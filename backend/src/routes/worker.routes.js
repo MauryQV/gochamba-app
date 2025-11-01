@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 import { createWorkerSchema } from "../validations/worker.schema.js";
 import { validateSchema } from "../middlewares/schema/validateSchema.middleware.js";
-import { registerWorkerController,createPublicationController } from "../controllers/worker.controller.js"
+import { registerWorkerController,createPublicationController ,listPublicationsController} from "../controllers/worker.controller.js"
 import { verifyToken } from "../middlewares/auth.middleware.js";
 const upload = multer({ dest: "uploads/" });
 
@@ -20,5 +20,9 @@ router.post(
   upload.array("imagenes", 3),
   createPublicationController
 );
+router.get(
+  '/worker/publications', 
+  verifyToken, 
+  listPublicationsController);
 
 export default router;

@@ -105,3 +105,59 @@ export const createPublicationService = async (usuarioId, data, imagenes = []) =
 
   return result;
 };
+export async function listPublicationsService(
+  usuarioId,
+  { page = 1, pageSize = 10, estado, buscar, order = 'desc', oficioId }
+) {
+  // Encontrar el perfilTrabajador del usuario
+  const perfil = await prisma.perfil.findUnique({
+    where: { usuarioId },
+    include: { perfilTrabajador: true },
+  });
+  if (!perfil || !perfil.perfilTrabajador) {
+    const e = new Error('El usuario no tiene un perfil de trabajador activo.');
+    e.status = 400;
+    throw e;
+  }
+  const perfilTrabajadorId = perfil.perfilTrabajador.id;
+
+  // filtros
+  const where = { perfilTrabajadorId };
+  if (estado) where.estadoModeracion = estado;             
+  if (typeof oficioId !== 'undefined') where.oficioId = Number(oficioId);
+
+  if (buscar && buscar.trim()) {
+    where.OR = [
+      { titulo: { contains: buscar, mode: 'insensitive' } },
+      { descripcion: { contains: buscar, mode: 'insensitive' } },
+    ];
+  }
+
+  const skip = (Number(page) - 1) * Number(pageSize);
+  const take = Number(pageSize);
+
+  const [items, total] = await Promise.all([
+    prisma.servicio.findMany({
+      where,
+      orderBy: { creadoEn: order === 'asc' ? 'asc' : 'desc' },
+      skip,
+      take,
+      include: {
+        imagenes: true,        
+        PerfilTrabajador: true,
+        Oficio: true,         
+      },
+    }),
+    prisma.servicio.count({ where }),
+  ]);
+
+  return {
+    items,
+    pagination: {
+      page: Number(page),
+      pageSize: Number(pageSize),
+      total,
+      pages: Math.max(1, Math.ceil(total / Number(pageSize))),
+    },
+  };
+};
