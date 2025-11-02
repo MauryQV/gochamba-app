@@ -1,4 +1,4 @@
-import { registerWorkerService, createPublicationService } from "../services/worker.service.js"
+import { registerWorkerService, createPublicationService,listPublicationsService } from "../services/worker.service.js"
 
 export const registerWorkerController = async (req, res) => {
   try {
@@ -38,5 +38,26 @@ export const createPublicationController = async (req, res) => {
       success: false,
       error: error.message,
     });
+  }
+};
+export async function listPublicationsController(req, res) {
+  try {
+    const usuarioId = req.usuarioId; // viene del JWT por verifyToken
+    const { page, pageSize, estado, buscar, order, oficioId } = req.query;
+
+    const data = await listPublicationsService(usuarioId, {
+      page,
+      pageSize,
+      estado,
+      buscar,
+      order,
+      oficioId,
+    });
+
+    return res.json({ ok: true, ...data });
+  } catch (err) {
+    const status = err.status || 500;
+    console.error('listPublicationsController error:', err);
+    return res.status(status).json({ ok: false, message: err.message || 'Error interno' });
   }
 };
