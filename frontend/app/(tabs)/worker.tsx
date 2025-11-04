@@ -1,14 +1,15 @@
 import { StyleSheet } from "react-native";
-
-import EditScreenInfo from "@/components/EditScreenInfo";
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { useState } from "react";
-
 import { ChevronDown } from "lucide-react-native";
+import { useRouter } from "expo-router";
+
 export default function WorkerTab() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
   const [ShowCategories, setShowCategories] = useState(false);
   const [price, setPrice] = useState("");
+  const router = useRouter();
+
   const categories = ["Plomería", "Electricidad", "Carpintería", "Limpieza", "Jardinería"];
   const servicios = [
     {
@@ -16,11 +17,7 @@ export default function WorkerTab() {
       title: "Reparación de Fugas",
       category: "Plomería",
       trabajador: "Juan Pérez",
-      ubicacion: "Av. Principal 123, Cochabamba",
-      //imagenes: [
-      // require("./../frontend/assets/plomeria1.jpg"),
-      // require("./../frontend/assets/plomeria2.jpg"),
-      // ],
+      ubicacion: "Av. Principal 12345, Cochabamba",
     },
     {
       id: 2,
@@ -28,12 +25,14 @@ export default function WorkerTab() {
       category: "Electricidad",
       trabajador: "María López",
       ubicacion: "Calle Aroma, esquina con Av. Siempre Viva",
-      //imagenes: [
-      //require("../../assets/electricidad1.jpg"),
-      //require("../../assets/electricidad2.jpg"),
-      //],
     },
   ];
+
+  const handlePublicarServicio = () => {
+    // usar router.push para navegar con expo-router
+    router.push("/works/PublishServiceScreen");
+  };
+
   return (
     <View className="flex-1 bg-white">
       {/* Decorative circles at bottom */}
@@ -41,6 +40,7 @@ export default function WorkerTab() {
         <View className="w-40 h-40 bg-blue-600 rounded-full absolute -bottom-20 -right-10"></View>
         <View className="w-32 h-32 bg-orange-500 rounded-full absolute -bottom-16 right-20"></View>
       </View>
+
       {/* Filtros */}
       <View className="flex-row px-4 mt-4 space-x-3">
         {/* Categoría */}
@@ -52,6 +52,7 @@ export default function WorkerTab() {
             <Text className="text-gray-700">{selectedCategory}</Text>
             <ChevronDown size={18} color="#555" />
           </TouchableOpacity>
+
           {ShowCategories && (
             <View className="absolute w-full bg-white rounded-lg border border-gray-300 mt-1 z-10">
               {categories.map((cat, idx) => (
@@ -69,6 +70,7 @@ export default function WorkerTab() {
             </View>
           )}
         </View>
+
         {/* Precio */}
         <TextInput
           className="w-28 h-12 bg-gray-100 border border-gray-300 rounded-lg px-3"
@@ -78,27 +80,43 @@ export default function WorkerTab() {
           keyboardType="numeric"
         />
       </View>
+
       {/* Lista de servicios */}
       <ScrollView className="mt-6 px-4">
         {servicios.map((s) => (
-          <View key={s.id} className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm">
+          <View
+            key={s.id}
+            className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm"
+          >
             {/* Header */}
             <View className="flex-row items-center mb-3">
               <View>
                 <Text className="text-lg font-semibold text-blue-600">{s.title}</Text>
                 <Text className="text-gray-700 text-sm">Categoría: {s.category}</Text>
-                {s.trabajador && <Text className="text-gray-700 text-sm">Trabajador: {s.trabajador}</Text>}
-                {s.ubicacion && <Text className="text-gray-700 text-sm">Ubicación: {s.ubicacion}</Text>}
+                {s.trabajador && (
+                  <Text className="text-gray-700 text-sm">Trabajador: {s.trabajador}</Text>
+                )}
+                {s.ubicacion && (
+                  <Text className="text-gray-700 text-sm">Ubicación: {s.ubicacion}</Text>
+                )}
               </View>
             </View>
 
-            {/* Botón */}
+            {/* Botón Solicitar servicio */}
             <TouchableOpacity className="bg-blue-600 py-2 rounded-lg items-center">
               <Text className="text-white font-semibold">Solicitar servicio</Text>
             </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
+
+      {/*Botón flotante Publicar Servicio */}
+      <TouchableOpacity
+        className="bg-blue-600 w-16 h-16 rounded-full items-center justify-center absolute bottom-32 right-8 shadow-lg"
+        onPress={handlePublicarServicio}
+      >
+        <Text className="text-white text-2xl font-bold">+</Text>
+      </TouchableOpacity>
     </View>
   );
 }
