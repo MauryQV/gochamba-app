@@ -1,8 +1,9 @@
-import { StyleSheet } from "react-native";
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react-native";
+import Spinner from "@/components/Spinner";
+import { usePublicationsWorker } from "@/src/hooks/use-publications-worker";
 import { useRouter } from "expo-router";
+import { ChevronDown, DeleteIcon, Eye, Pencil } from "lucide-react-native";
+import { useState } from "react";
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function WorkerTab() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
@@ -10,7 +11,8 @@ export default function WorkerTab() {
   const [price, setPrice] = useState("");
   const router = useRouter();
 
-  const categories = ["Plomería", "Electricidad", "Carpintería", "Limpieza", "Jardinería"];
+  const { listServices, categories } = usePublicationsWorker();
+
   const servicios = [
     {
       id: 1,
@@ -35,12 +37,6 @@ export default function WorkerTab() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Decorative circles at bottom */}
-      <View className="absolute bottom-0 right-0">
-        <View className="w-40 h-40 bg-blue-600 rounded-full absolute -bottom-20 -right-10"></View>
-        <View className="w-32 h-32 bg-orange-500 rounded-full absolute -bottom-16 right-20"></View>
-      </View>
-
       {/* Filtros */}
       <View className="flex-row px-4 mt-4 space-x-3">
         {/* Categoría */}
@@ -52,19 +48,18 @@ export default function WorkerTab() {
             <Text className="text-gray-700">{selectedCategory}</Text>
             <ChevronDown size={18} color="#555" />
           </TouchableOpacity>
-
           {ShowCategories && (
-            <View className="absolute w-full bg-white rounded-lg border border-gray-300 mt-1 z-10">
+            <View className="absolute w-full bg-white rounded-lg border border-gray-300 mt-14 z-10">
               {categories.map((cat, idx) => (
                 <TouchableOpacity
                   key={idx}
                   className="px-3 py-2 border-b border-gray-200"
                   onPress={() => {
-                    setSelectedCategory(cat);
+                    setSelectedCategory(cat.name);
                     setShowCategories(false);
                   }}
                 >
-                  <Text>{cat}</Text>
+                  <Text>{cat.name}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -83,36 +78,56 @@ export default function WorkerTab() {
 
       {/* Lista de servicios */}
       <ScrollView className="mt-6 px-4">
-        {servicios.map((s) => (
-          <View
-            key={s.id}
-            className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm"
-          >
-            {/* Header */}
-            <View className="flex-row items-center mb-3">
-              <View>
-                <Text className="text-lg font-semibold text-blue-600">{s.title}</Text>
-                <Text className="text-gray-700 text-sm">Categoría: {s.category}</Text>
-                {s.trabajador && (
-                  <Text className="text-gray-700 text-sm">Trabajador: {s.trabajador}</Text>
-                )}
-                {s.ubicacion && (
-                  <Text className="text-gray-700 text-sm">Ubicación: {s.ubicacion}</Text>
-                )}
+        {!listServices ? (
+          <View className=" mt-10 flex flex-col items-center justify-center">
+            <Spinner h={36} w={36} />
+            <Text className="text-center text-xs mt-4 text-gray-600">Cargando servicios disponibles</Text>
+          </View>
+        ) : listServices.length > 0 ? (
+          listServices.map((s) => (
+            <View key={s.id} className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm">
+              {/* Header */}
+              <View className="flex-row items-center mb-3">
+                <View>
+                  <View className="flex flex-row items-center justify-between">
+                    <Text className="text-lg font-semibold text-blue-600 w-[100%]">{s.title}</Text>
+                  </View>
+                  <Text className="text-gray-700 text-sm">Categoría: {s.category}</Text>
+                  {s.description && (
+                    <Text className="text-gray-700 text-sm" numberOfLines={2} ellipsizeMode="tail">
+                      <Text className="font-semibold">Descripción: </Text>
+                      {s.description}
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Botón */}
+              <View className="space-y-2 flex flex-row w-full justify-between">
+                <TouchableOpacity className="flex gap-x-2 flex-row justify-center bg-blue-600 py-2 rounded-lg items-center w-[30%]">
+                  <Pencil color="white" height={15} width={15} />
+                  <Text className="text-white font-semibold">Editar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity className="flex gap-x-2 flex-row justify-center bg-blue-600 py-2 rounded-lg items-center w-[30%]">
+                  <Eye color="white" height={20} width={20} />
+                  <Text className="text-white font-semibold">Ver</Text>
+                </TouchableOpacity>
+                <TouchableOpacity className="bg-red-600 py-2 rounded-lg items-center w-[30%]">
+                  <Text className="text-white font-semibold">Eliminar</Text>
+                </TouchableOpacity>
               </View>
             </View>
-
-            {/* Botón Solicitar servicio */}
-            <TouchableOpacity className="bg-blue-600 py-2 rounded-lg items-center">
-              <Text className="text-white font-semibold">Solicitar servicio</Text>
-            </TouchableOpacity>
+          ))
+        ) : (
+          <View className=" mt-10 flex flex-col items-center justify-center">
+            <Text className="text-center text-lg mt-4 text-gray-600">No tienes publicaciones.</Text>
           </View>
-        ))}
+        )}
       </ScrollView>
 
       {/*Botón flotante Publicar Servicio */}
       <TouchableOpacity
-        className="bg-blue-600 w-16 h-16 rounded-full items-center justify-center absolute bottom-32 right-8 shadow-lg"
+        className="bg-blue-600 w-16 h-16 rounded-full items-center justify-center absolute bottom-8 right-6 shadow-lg"
         onPress={handlePublicarServicio}
       >
         <Text className="text-white text-2xl font-bold">+</Text>

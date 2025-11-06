@@ -1,10 +1,10 @@
 import { StyleSheet } from "react-native";
 
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from "react-native";
-import { useState } from "react";
+import Spinner from "@/components/Spinner";
 import { useServices } from "@/src/hooks/use-services";
 import { ChevronDown } from "lucide-react-native";
-import Spinner from "@/components/Spinner";
+import { useState } from "react";
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 export default function TabOneScreen() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
   const [ShowCategories, setShowCategories] = useState(false);
@@ -63,7 +63,12 @@ export default function TabOneScreen() {
               {/* Header */}
               <View className="flex-row items-center mb-3">
                 <View>
-                  <Text className="text-lg font-semibold text-blue-600">{s.title}</Text>
+                  <View className="flex flex-row items-center justify-between">
+                    <Text className="text-lg font-semibold text-blue-600 w-[80%]">{s.title}</Text>
+                    <View className="rounded-full overflow-hidden">
+                      <Image src={s.profile_photo} width={40} height={40} />
+                    </View>
+                  </View>
                   <Text className="text-gray-700 text-sm">Categoría: {s.category}</Text>
                   {s.trabajador && <Text className="text-gray-700 text-sm">Trabajador: {s.trabajador}</Text>}
                 </View>
