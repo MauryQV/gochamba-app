@@ -1,51 +1,44 @@
 import { BASE_URL } from "@/constants";
+import axios from "axios";
 
 const REQUEST_TIMEOUT = 30000;
 
-// En React Native a menudo fetch maneja FormData mejor que axios para uploads.
-export const createPublication = async (formData: FormData, token: string) => {
-  // timeout con AbortController
-  const controller = typeof AbortController !== "undefined" ? new AbortController() as any : null;
-  const signal = controller ? controller.signal : undefined;
-  const timeout = controller ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT) : null;
-
+// Upload service images to get URLs
+export const uploadServiceImages = async (formData: FormData, token: string): Promise<string[]> => {
   try {
-    const res = await fetch(`${BASE_URL}/worker/publication`, {
-      method: "POST",
+    const response = await axios.post(`${BASE_URL}/worker/upload-service-images`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
-        // IMPORTANT: No añadir 'Content-Type' aquí; fetch lo establecerá correctamente para multipart/form-data
-      } as any,
-      body: formData as any,
-      signal,
+        "Content-Type": "multipart/form-data",
+      },
+      timeout: REQUEST_TIMEOUT,
     });
 
-    if (timeout) clearTimeout(timeout);
-
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      let data: any = null;
-      try {
-        data = text ? JSON.parse(text) : { message: text };
-      } catch (_e) {
-        data = { message: text };
-      }
-      const message = data?.error || data?.message || `HTTP ${res.status}`;
-      const e: any = new Error(message);
-      e.response = { status: res.status, data };
-      throw e;
-    }
-
-    return await res.json();
+    return response.data.urls;
   } catch (error: any) {
-    if (timeout) clearTimeout(timeout);
-    // AbortError indica timeout
-    if (error?.name === "AbortError") {
-      console.error("Request aborted (timeout) creating publication");
-      throw new Error("Network error: request timed out");
-    }
+    console.error("Error uploading images:", error);
+    const message =
+      error?.response?.data?.error || error?.response?.data?.message || error?.message || "Error al subir imágenes";
+    throw new Error(message);
+  }
+};
 
-    console.error("Network/Fetch error creating publication:", error.message || error);
-    throw new Error(`Network error: ${error.message || "No response from server"}`);
+// Create publication with data (including imagenesUrls)
+export const createPublication = async (data: any, token: string) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/worker/publication`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      timeout: REQUEST_TIMEOUT,
+    });
+
+    return response.data.urls;
+  } catch (error: any) {
+    console.error("Error creating publication:", error);
+    const message =
+      error?.response?.data?.error || error?.response?.data?.message || error?.message || "Error al crear publicación";
+    throw new Error(message);
   }
 };
