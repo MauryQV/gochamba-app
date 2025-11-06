@@ -145,7 +145,13 @@ export async function listPublicationsService(
           telefono: serv.PerfilTrabajador.perfil.telefono,
         }
       : { nombreCompleto: "Desconocido", fotoUrl: null, telefono: null },
-    imagenes: serv.imagenes.map((img) => img.imagenUrl),
+    imagenes: serv.imagenes
+  .sort((a, b) => a.orden - b.orden)
+  .map((img) => ({
+    id: img.id,
+    url: img.imagenUrl,
+    orden: img.orden,
+  })),
     creadoEn: serv.creadoEn,
     estadoModeracion: serv.estadoModeracion,
   }));
