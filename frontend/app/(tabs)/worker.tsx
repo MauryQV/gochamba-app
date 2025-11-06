@@ -126,7 +126,24 @@ export default function WorkerTab() {
                   <Pencil color="white" height={15} width={15} />
                   <Text className="text-white font-semibold">Editar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity className="flex gap-x-2 flex-row justify-center bg-blue-600 py-2 rounded-lg items-center w-[30%]">
+                <TouchableOpacity
+                  onPress={() => {
+                    // Navigate to view screen with service data
+                    const serviceToView = {
+                      id: s.id,
+                      titulo: s.title,
+                      descripcion: s.description,
+                      precio: s.price || 0,
+                      categoria: s.category,
+                      imagenes: s.images,
+                    };
+                    router.push({
+                      pathname: "/works/see-service-screen",
+                      params: { service: JSON.stringify(serviceToView) },
+                    });
+                  }}
+                  className="flex gap-x-2 flex-row justify-center bg-blue-600 py-2 rounded-lg items-center w-[30%]"
+                >
                   <Eye color="white" height={20} width={20} />
                   <Text className="text-white font-semibold">Ver</Text>
                 </TouchableOpacity>
