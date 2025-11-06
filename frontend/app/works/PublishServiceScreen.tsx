@@ -149,11 +149,11 @@ export default function PublishServiceScreen() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} className="flex-1 px-5 pt-4">
         {/* Título del formulario */}
-        <Text className="text-xl font-semibold text-gray-800 mb-4">Publicar un nuevo servicio</Text>
+        <Text className="text-xl font-poppinsBold text-gray-800 mb-4">Publicar un nuevo servicio</Text>
 
         {/*Título */}
         <TextInput
-          className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 mb-4"
+          className="bg-gray-100 border border-gray-300  rounded-lg px-4 py-3 mb-5 placeholder:text-gray-400"
           placeholder="Título"
           value={data.titulo}
           onChangeText={(text) => setData({ ...data, titulo: text })}
@@ -161,16 +161,17 @@ export default function PublishServiceScreen() {
 
         {/*Descripción */}
         <TextInput
-          className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 mb-4"
+          className="bg-gray-100 border border-gray-300 h-24 rounded-lg px-4 py-3 mb-5 placeholder:text-gray-400"
           placeholder="Descripción"
           multiline
+          textAlignVertical="top"
           numberOfLines={4}
           value={data.descripcion}
           onChangeText={(text) => setData({ ...data, descripcion: text })}
         />
 
         {/*Categoría */}
-        <View className="mb-4 relative">
+        <View className="mb-5 relative">
           <TouchableOpacity
             className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 flex-row justify-between items-center"
             onPress={() => setShowCategorias(!showCategorias)}
@@ -201,7 +202,7 @@ export default function PublishServiceScreen() {
 
         {/* Precio */}
         <TextInput
-          className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 mb-4"
+          className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 mb-5 placeholder:text-gray-400"
           placeholder="Precio"
           keyboardType="numeric"
           value={data.precio}
