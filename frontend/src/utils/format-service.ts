@@ -8,6 +8,8 @@ export const formatService = (raw: ServiceDb[]): ServiceSummary[] => {
     trabajador: service?.trabajador?.nombreCompleto ?? "",
     profile_photo: service?.trabajador?.fotoUrl ?? "",
     images: service?.imagenes ?? [],
+    price: service?.precio ?? 0,
+    jobId: service?.oficio?.id ?? "",
   }));
 
   return servicesFormatted;
