@@ -42,3 +42,69 @@ export const createPublication = async (data: any, token: string) => {
     throw new Error(message);
   }
 };
+
+// Update service data
+export const updateService = async (serviceId: string, data: any, token: string) => {
+  try {
+    const response = await axios.patch(`${BASE_URL}/services/${serviceId}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      timeout: REQUEST_TIMEOUT,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error("Error updating service:", error);
+    const message =
+      error?.response?.data?.error ||
+      error?.response?.data?.message ||
+      error?.message ||
+      "Error al actualizar servicio";
+    throw new Error(message);
+  }
+};
+
+// Add images to existing service
+export const addServiceImages = async (serviceId: string, imagenesUrls: string[], token: string) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/worker/service/${serviceId}/images`,
+      { imagenesUrls },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        timeout: REQUEST_TIMEOUT,
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    console.error("Error adding service images:", error);
+    const message =
+      error?.response?.data?.error || error?.response?.data?.message || error?.message || "Error al agregar imágenes";
+    throw new Error(message);
+  }
+};
+
+// Delete service image
+export const deleteServiceImage = async (serviceId: string, imageId: string, token: string) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}/services/${serviceId}/images/${imageId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      timeout: REQUEST_TIMEOUT,
+    });
+
+    return response.data;
+  } catch (error: any) {
+    console.error("Error deleting service image:", error);
+    const message =
+      error?.response?.data?.error || error?.response?.data?.message || error?.message || "Error al eliminar imagen";
+    throw new Error(message);
+  }
+};

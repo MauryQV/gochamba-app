@@ -12,7 +12,7 @@ export type ServiceDb = {
     fotoUrl: string;
     telefono: string;
   };
-  imagenes: string[];
+  imagenes: { id: string; imagenUrl: string; orden: number }[];
   creadoEn: string;
 };
 export type ServiceSummary = {
@@ -21,6 +21,8 @@ export type ServiceSummary = {
   category: string;
   trabajador: string;
   profile_photo: string;
-  images: string[];
+  images: { id: string; imagenUrl: string; orden: number }[];
   description: string;
+  price?: number;
+  jobId?: string;
 };
