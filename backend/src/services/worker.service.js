@@ -1,30 +1,26 @@
-import prisma from "../../config/prismaClient.js"
-import { uploadImageToCloudinary } from "../services/cloudinary/cloudinary.service.js";
-import fs from "fs";
+import prisma from "../../config/prismaClient.js";
 
-export const registerWorkerService = async (usuarioId, data) => {
+
+export const registerWorkerService = async (perfilId, data) => {
   const { descripcion, carnetIdentidad, oficios = [] } = data;
-  const perfil = await prisma.perfil.findUnique({
-    where: { usuarioId: usuarioId },
-  });
-  if (!perfil) throw new Error("El usuario no tiene un perfil válido.");
+
   const existingWorker = await prisma.perfilTrabajador.findUnique({
-    where: { perfilId: perfil.id },
+    where: { perfilId },
   });
+  
   if (existingWorker) {
     throw new Error("El usuario ya está registrado como trabajador.");
   }
-  // Crear perfil de trabajador y sus relaciones dentro de una transaccion
+
   const result = await prisma.$transaction(async (tx) => {
-    // Crear el perfil de trabajador
     const newWorkerProfile = await tx.perfilTrabajador.create({
       data: {
-        perfilId: perfil.id,
+        perfilId,
         descripcion,
         carnetIdentidad,
       },
     });
-    // Asociar los oficios seleccionados
+
     await Promise.all(
       oficios.map((oficioId) =>
         tx.trabajadorOficio.create({
@@ -35,68 +31,49 @@ export const registerWorkerService = async (usuarioId, data) => {
         })
       )
     );
-    // Agregar el rol TRABAJADOR si no lo tiene
     const existingRole = await tx.usuarioRol.findFirst({
-      where: { usuarioId: usuarioId, rol: "TRABAJADOR" },
+      where: { usuarioId: data.usuarioId, rol: "TRABAJADOR" },
     });
+    
     if (!existingRole) {
       await tx.usuarioRol.create({
         data: {
-          usuarioId: usuarioId,
+          usuarioId: data.usuarioId,
           rol: "TRABAJADOR",
         },
       });
     }
+
     return newWorkerProfile;
   });
+
   return result;
 };
 
-
-export const createPublicationService = async (usuarioId, data, imagenes = []) => {
+export const createPublicationService = async (perfilTrabajadorId, data, imagenesUrls = []) => {
   const { titulo, descripcion, precio, oficioId } = data;
-  const perfil = await prisma.perfil.findUnique({
-    where: { usuarioId },
-    include: { perfilTrabajador: true },
-  });
-  if (!perfil || !perfil.perfilTrabajador) {
-    throw new Error("El usuario no tiene un perfil de trabajador activo.");
-  }
-  const perfilTrabajadorId = perfil.perfilTrabajador.id;
-  // Validar cantidad de imágenes
-  if (imagenes.length < 1 || imagenes.length > 3) {
-    throw new Error("Debes subir entre 1 y 3 imágenes por publicación.");
+
+  if (imagenesUrls.length < 1 || imagenesUrls.length > 3) {
+    throw new Error("Debes proporcionar entre 1 y 3 URLs de imágenes.");
   }
 
-  // Transacción: crear servicio + imágenes
   const result = await prisma.$transaction(async (tx) => {
     const servicio = await tx.servicio.create({
       data: {
-        trabajadorOficioId: `${perfilTrabajadorId}_${oficioId}`, // solo para legibilidad
+        trabajadorOficioId: `${perfilTrabajadorId}`,
         titulo,
         descripcion,
         precio: parseFloat(precio),
         perfilTrabajadorId,
-        oficioId,
-        estadoModeracion: "PENDIENTE",
+        oficioId: oficioId
       },
     });
 
-    // Subir imágenes a Cloudinary
-    const urls = [];
-    for (let i = 0; i < imagenes.length; i++) {
-      const filePath = imagenes[i].path;
-      const url = await uploadImageToCloudinary(filePath, "servicios");
-      fs.unlinkSync(filePath); // borrar temporal
-      urls.push({ imagenUrl: url, orden: i });
-    }
-
-    // Guardar URLs en DB
     await tx.imagenServicio.createMany({
-      data: urls.map((img) => ({
+      data: imagenesUrls.map((url, index) => ({
         servicioId: servicio.id,
-        imagenUrl: img.imagenUrl,
-        orden: img.orden,
+        imagenUrl: url,
+        orden: index,
       })),
     });
 
@@ -105,25 +82,14 @@ export const createPublicationService = async (usuarioId, data, imagenes = []) =
 
   return result;
 };
+
+
 export async function listPublicationsService(
-  usuarioId,
+  perfilTrabajadorId,
   { page = 1, pageSize = 10, estado, buscar, order = 'desc', oficioId }
 ) {
-  // Encontrar el perfilTrabajador del usuario
-  const perfil = await prisma.perfil.findUnique({
-    where: { usuarioId },
-    include: { perfilTrabajador: true },
-  });
-  if (!perfil || !perfil.perfilTrabajador) {
-    const e = new Error('El usuario no tiene un perfil de trabajador activo.');
-    e.status = 400;
-    throw e;
-  }
-  const perfilTrabajadorId = perfil.perfilTrabajador.id;
-
-  // filtros
   const where = { perfilTrabajadorId };
-  if (estado) where.estadoModeracion = estado;             
+  if (estado) where.estadoModeracion = estado;
   if (typeof oficioId !== 'undefined') where.oficioId = Number(oficioId);
 
   if (buscar && buscar.trim()) {
@@ -143,9 +109,7 @@ export async function listPublicationsService(
       skip,
       take,
       include: {
-        imagenes: true,        
-        PerfilTrabajador: true,
-        Oficio: true,         
+        imagenes: true,
       },
     }),
     prisma.servicio.count({ where }),
@@ -160,4 +124,92 @@ export async function listPublicationsService(
       pages: Math.max(1, Math.ceil(total / Number(pageSize))),
     },
   };
+}
+
+
+export const updatePublicationService = async (servicioId, data) => {
+  const { titulo, descripcion, precio, oficioId } = data;
+
+  if (!data || Object.keys(data).length === 0) {
+    throw new Error("No se enviaron datos para actualizar.");
+  }
+
+  const servicio = await prisma.servicio.findUnique({
+    where: { id: servicioId },
+    select: { perfilTrabajadorId: true }
+  });
+
+  if (!servicio) throw new Error("Servicio no encontrado.");
+  
+  const updateData = {
+    ...(titulo !== undefined && { titulo }),
+    ...(descripcion !== undefined && { descripcion }),
+    ...(precio !== undefined && !isNaN(precio) && { precio: parseFloat(precio) }),
+    ...(oficioId !== undefined && { oficioId }),
+    estadoModeracion: "PENDIENTE"
+  };
+
+  if (Object.keys(updateData).length === 1) { // Solo estadoModeracion
+    throw new Error("No se enviaron campos válidos para actualizar.");
+  }
+
+  const updated = await prisma.servicio.update({
+    where: { id: servicioId },
+    data: updateData,
+  });
+
+  return updated;
+};
+
+
+export const addServiceImagesService = async (perfilTrabajadorId, servicioId, imagenesUrls) => {
+  const servicio = await prisma.servicio.findUnique({
+    where: { id: servicioId },
+    select: { perfilTrabajadorId: true }
+  });
+
+  if (!servicio) throw new Error("Servicio no encontrado.");
+  if (servicio.perfilTrabajadorId !== perfilTrabajadorId)
+    throw new Error("No autorizado.");
+
+  const currentCount = await prisma.imagenServicio.count({
+    where: { servicioId },
+  });
+
+  if (currentCount + imagenesUrls.length > 3)
+    throw new Error("Máximo 3 imágenes por servicio.");
+
+  await prisma.imagenServicio.createMany({
+    data: imagenesUrls.map((url, index) => ({
+      servicioId,
+      imagenUrl: url,
+      orden: currentCount + index,
+    })),
+  });
+
+  return imagenesUrls;
+};
+
+
+export const deleteServiceImageService = async (perfilTrabajadorId, servicioId, imagenId) => {
+  const servicio = await prisma.servicio.findUnique({
+    where: { id: servicioId },
+    select: {
+      perfilTrabajadorId: true,
+      imagenes: {
+        where: { id: imagenId },
+      },
+    },
+  });
+
+  if (!servicio) throw new Error("Servicio no encontrado.");
+  if (servicio.perfilTrabajadorId !== perfilTrabajadorId)
+    throw new Error("No autorizado.");
+  if (servicio.imagenes.length === 0)
+    throw new Error("Imagen no encontrada.");
+
+  await prisma.imagenServicio.delete({ where: { id: imagenId } });
+
+  return { success: true,
+     imagen_eliminada: imagenId };
 };
