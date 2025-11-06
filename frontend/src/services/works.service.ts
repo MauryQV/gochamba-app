@@ -108,3 +108,27 @@ export const deleteServiceImage = async (serviceId: string, imageId: string, tok
     throw new Error(message);
   }
 };
+
+// Request a service
+export const requestService = async (serviceId: string, token: string) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/services/${serviceId}/requests`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        timeout: REQUEST_TIMEOUT,
+      }
+    );
+
+    return response.data;
+  } catch (error: any) {
+    console.error("Error requesting service:", error);
+    const message =
+      error?.response?.data?.error || error?.response?.data?.message || error?.message || "Error al solicitar servicio";
+    throw new Error(message);
+  }
+};
