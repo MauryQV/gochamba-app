@@ -10,12 +10,15 @@ datasource db {
 model Usuario {
     id             String   @id @default(cuid())
     email          String   @unique
-    password       String
+    password       String?
     esActivo       Boolean  @default(true)
     creadoEn       DateTime @default(now())
-    es_configurado Boolean  @default(false) // Indica si el usuario ha completado su perfil
+    es_configurado Boolean  @default(false)
     actualizadoEn  DateTime @updatedAt
-    telefono       String   @unique
+    telefono       String?  @unique
+    googleId       String?  @unique
+    departamento   String?
+    tiene_whatsapp Boolean  @default(false)
 
     // Relaciones
     perfil             Perfil?
@@ -69,8 +72,8 @@ model Perfil {
     usuarioId      String  @unique
     nombreCompleto String
     fotoUrl        String // obligatorio
-    descripcion    String?
     telefono       String
+    direccion      String?
 
     creadoEn      DateTime @default(now())
     actualizadoEn DateTime @updatedAt
@@ -84,14 +87,13 @@ model Perfil {
 }
 
 model PerfilTrabajador {
-    id               String  @id @default(cuid())
-    perfilId         String  @unique
-    estaDisponible   Boolean @default(true)
-    tarifaPorHora    Float?
-    añosExperiencia Int?
-
-    creadoEn      DateTime @default(now())
-    actualizadoEn DateTime @updatedAt
+    id              String   @id @default(cuid())
+    perfilId        String   @unique
+    estaDisponible  Boolean  @default(true)
+    creadoEn        DateTime @default(now())
+    actualizadoEn   DateTime @updatedAt
+    descripcion     String
+    carnetIdentidad String   @unique
 
     // Relaciones
     perfil    Perfil             @relation(fields: [perfilId], references: [id], onDelete: Cascade)
@@ -108,7 +110,6 @@ model Oficio {
     id          String  @id @default(cuid())
     nombre      String  @unique
     descripcion String?
-    iconoUrl    String?
     esActivo    Boolean @default(true)
 
     trabajadores TrabajadorOficio[]
@@ -118,12 +119,10 @@ model Oficio {
 }
 
 model TrabajadorOficio {
-    id                 String     @id @default(cuid())
+    id                 String   @id @default(cuid())
     perfilTrabajadorId String
     oficioId           String
-    esPrincipal        Boolean    @default(false)
-    servicios          Servicio[]
-    creadoEn           DateTime   @default(now())
+    creadoEn           DateTime @default(now())
 
     perfil PerfilTrabajador @relation(fields: [perfilTrabajadorId], references: [id], onDelete: Cascade)
     oficio Oficio           @relation(fields: [oficioId], references: [id])
@@ -141,10 +140,8 @@ model Servicio {
     esActivo           Boolean          @default(true)
     estadoModeracion   EstadoModeracion @default(PENDIENTE)
 
-    creadoEn      DateTime @default(now())
-    actualizadoEn DateTime @updatedAt
-
-    trabajadorOficio   TrabajadorOficio     @relation(fields: [trabajadorOficioId], references: [id])
+    creadoEn           DateTime             @default(now())
+    actualizadoEn      DateTime             @updatedAt
     imagenes           ImagenServicio[]
     solicitudes        SolicitudServicio[]
     moderaciones       ModeracionServicio[]
