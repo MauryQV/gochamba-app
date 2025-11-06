@@ -20,6 +20,7 @@ export type ServiceSummary = {
   title: string;
   category: string;
   trabajador: string;
-
+  profile_photo: string;
   images: string[];
+  description: string;
 };
