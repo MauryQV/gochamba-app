@@ -15,16 +15,11 @@ export const usePublicationsWorker = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Fetching worker publications...", setupData?.token);
         const response = await getPublicationsWorker(setupData?.token);
-        console.log("Worker publications fetched:", response.data);
         const categories = await servicesService.getCategories();
-        console.log("categories", categories);
         const listCategories = formatCategory(categories);
-        console.log("listCategories", listCategories);
         setCategories(listCategories);
         const list = formatService(response.data.items);
-        console.log("list", list);
         setListServices(list);
       } catch (err) {
         if (axios.isAxiosError(err)) {

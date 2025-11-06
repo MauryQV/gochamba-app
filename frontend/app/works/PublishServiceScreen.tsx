@@ -111,7 +111,6 @@ export default function PublishServiceScreen() {
       const imageUrls = await uploadServiceImages(imageFormData, token);
 
       // Step 2: Create publication with image URLs
-      console.log("imageUrls", imageUrls);
       const publicationData = {
         ...data,
         imagenesUrls: imageUrls,

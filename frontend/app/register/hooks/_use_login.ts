@@ -17,7 +17,7 @@ export const useLogin = () => {
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      console.log("ya pe oy");
+      console.log("STARTING");
 
       setIsSubmitting(true);
       const res = await axios.post(`${BASE_URL}/user/login`, { email: email, password: password });
