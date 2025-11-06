@@ -40,7 +40,6 @@ export const useGoogleAuth = () => {
       if (isSuccessResponse(response)) {
         const { idToken, user } = response.data;
         const res = await sendTokenToBackend(idToken || "");
-        console.log("Response, lol", JSON.stringify(res?.user?.roles?.map((item: Rol) => item.rol)));
         if (res?.needsSetup) {
           setSetupData({ ...res, token: res?.token, rol: res?.user?.roles?.map((item: Rol) => item.rol) });
           router.push({
