@@ -255,3 +255,100 @@ export const deleteServiceImageService = async (perfilTrabajadorId, servicioId, 
   return { success: true,
      imagen_eliminada: imagenId };
 };
+
+export async function listSolicitudesRecibidasService(perfilTrabajadorId) {
+  const solicitudes = await prisma.solicitudServicio.findMany({
+    where: {
+      servicio: { perfilTrabajadorId },
+    },
+    orderBy: { creadoEn: "desc" },
+    include: {
+      cliente: {
+        select: {
+          id: true,
+          email: true,
+          telefono: true,
+          perfil: {
+            select: {
+              nombreCompleto: true,
+              fotoUrl: true,
+            },
+          },
+        },
+      },
+      servicio: {
+        select: {
+          id: true,
+          titulo: true,
+          precio: true,
+          Oficio: {
+            select: { nombre: true },
+          },
+        },
+      },
+    },
+  });
+
+  return solicitudes.map((sol) => ({
+    id: sol.id,
+    mensaje: sol.mensaje,
+    fechaSolicitada: sol.fechaSolicitada,
+    creadoEn: sol.creadoEn,
+    estado: sol.estado,
+    cliente: {
+      id: sol.cliente.id,
+      nombreCompleto: sol.cliente.perfil?.nombreCompleto || "Desconocido",
+      fotoUrl: sol.cliente.perfil?.fotoUrl || null,
+      telefono: sol.cliente.telefono || null,
+      email: sol.cliente.email,
+    },
+    servicio: {
+      id: sol.servicio.id,
+      titulo: sol.servicio.titulo,
+      precio: sol.servicio.precio,
+      oficio: sol.servicio.Oficio?.nombre || "Sin oficio",
+    },
+  }));
+}
+
+export async function aceptarSolicitudService(solicitudId, perfilTrabajadorId) {
+  const solicitud = await prisma.solicitudServicio.findUnique({
+    where: { id: solicitudId },
+    include: { servicio: true },
+  });
+
+  if (!solicitud) throw new Error("Solicitud no encontrada");
+  if (solicitud.servicio.perfilTrabajadorId !== perfilTrabajadorId)
+    throw new Error("No autorizado para aceptar esta solicitud");
+
+  if (solicitud.estado !== "PENDIENTE")
+    throw new Error("Solo se pueden aceptar solicitudes pendientes");
+
+  const updated = await prisma.solicitudServicio.update({
+    where: { id: solicitudId },
+    data: { estado: "ACEPTADA" },
+  });
+
+  return updated;
+}
+
+export async function rechazarSolicitudService(solicitudId, perfilTrabajadorId) {
+  const solicitud = await prisma.solicitudServicio.findUnique({
+    where: { id: solicitudId },
+    include: { servicio: true },
+  });
+
+  if (!solicitud) throw new Error("Solicitud no encontrada");
+  if (solicitud.servicio.perfilTrabajadorId !== perfilTrabajadorId)
+    throw new Error("No autorizado para rechazar esta solicitud");
+
+  if (solicitud.estado !== "PENDIENTE")
+    throw new Error("Solo se pueden rechazar solicitudes pendientes");
+
+  const updated = await prisma.solicitudServicio.update({
+    where: { id: solicitudId },
+    data: { estado: "RECHAZADA" },
+  });
+
+  return updated;
+}
