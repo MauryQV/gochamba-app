@@ -1,15 +1,18 @@
 import { StyleSheet } from "react-native";
 
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from "react-native";
-import { useState } from "react";
+import Spinner from "@/components/Spinner";
 import { useServices } from "@/src/hooks/use-services";
 import { ChevronDown } from "lucide-react-native";
-import Spinner from "@/components/Spinner";
+import { useState } from "react";
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
+
 export default function TabOneScreen() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
   const [ShowCategories, setShowCategories] = useState(false);
   const [price, setPrice] = useState("");
   const { listServices, categories } = useServices();
+  const router = useRouter();
 
   return (
     <View className="flex-1 bg-white">
@@ -59,21 +62,47 @@ export default function TabOneScreen() {
           </View>
         ) : (
           listServices.map((s) => (
-            <View key={s.id} className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm">
+            <TouchableOpacity
+              key={s.id}
+              className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm"
+              onPress={() => {
+                // Navigate to service detail screen
+                const serviceToView = {
+                  id: s.id,
+                  title: s.title,
+                  description: s.description,
+                  price: s.price || 0,
+                  category: s.category,
+                  trabajador: s.trabajador,
+                  profile_photo: s.profile_photo,
+                  images: s.images,
+                };
+                router.push({
+                  pathname: "/works/service-detail-screen",
+                  params: { service: JSON.stringify(serviceToView) },
+                });
+              }}
+              activeOpacity={0.7}
+            >
               {/* Header */}
               <View className="flex-row items-center mb-3">
-                <View>
-                  <Text className="text-lg font-semibold text-blue-600">{s.title}</Text>
+                <View className="flex-1">
+                  <View className="flex flex-row items-center justify-between">
+                    <Text className="text-lg font-semibold text-blue-600 w-[80%]">{s.title}</Text>
+                    <View className="rounded-full overflow-hidden">
+                      <Image src={s.profile_photo} width={40} height={40} />
+                    </View>
+                  </View>
                   <Text className="text-gray-700 text-sm">Categoría: {s.category}</Text>
                   {s.trabajador && <Text className="text-gray-700 text-sm">Trabajador: {s.trabajador}</Text>}
                 </View>
               </View>
 
-              {/* Botón */}
-              <TouchableOpacity className="bg-blue-600 py-2 rounded-lg items-center">
-                <Text className="text-white font-semibold">Solicitar servicio</Text>
-              </TouchableOpacity>
-            </View>
+              {/* Info adicional */}
+              <View className="bg-blue-50 px-3 py-2 rounded-lg">
+                <Text className="text-blue-700 font-semibold text-center">Toca para ver detalles y solicitar</Text>
+              </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>
