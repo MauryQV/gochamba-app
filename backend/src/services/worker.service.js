@@ -86,16 +86,17 @@ export const createPublicationService = async (perfilTrabajadorId, data, imagene
 
 export async function listPublicationsService(
   perfilTrabajadorId,
-  { page = 1, pageSize = 10, estado, buscar, order = 'desc', oficioId }
+  { page = 1, pageSize = 10, estado, buscar, order = "desc", oficioId }
 ) {
   const where = { perfilTrabajadorId };
+
   if (estado) where.estadoModeracion = estado;
-  if (typeof oficioId !== 'undefined') where.oficioId = Number(oficioId);
+  if (typeof oficioId !== "undefined") where.oficioId = Number(oficioId);
 
   if (buscar && buscar.trim()) {
     where.OR = [
-      { titulo: { contains: buscar, mode: 'insensitive' } },
-      { descripcion: { contains: buscar, mode: 'insensitive' } },
+      { titulo: { contains: buscar, mode: "insensitive" } },
+      { descripcion: { contains: buscar, mode: "insensitive" } },
     ];
   }
 
@@ -105,18 +106,58 @@ export async function listPublicationsService(
   const [items, total] = await Promise.all([
     prisma.servicio.findMany({
       where,
-      orderBy: { creadoEn: order === 'asc' ? 'asc' : 'desc' },
+      orderBy: { creadoEn: order === "asc" ? "asc" : "desc" },
       skip,
       take,
       include: {
         imagenes: true,
+        Oficio: {
+          select: { id: true, nombre: true },
+        },
+        PerfilTrabajador: {
+          include: {
+            perfil: {
+              select: {
+                nombreCompleto: true,
+                fotoUrl: true,
+                telefono: true,
+              },
+            },
+          },
+        },
       },
     }),
     prisma.servicio.count({ where }),
   ]);
 
+  const formattedItems = items.map((serv) => ({
+    id: serv.id,
+    titulo: serv.titulo,
+    descripcion: serv.descripcion,
+    precio: serv.precio,
+    oficio: serv.Oficio
+      ? { id: serv.Oficio.id, nombre: serv.Oficio.nombre }
+      : { id: null, nombre: "Sin oficio" },
+    trabajador: serv.PerfilTrabajador?.perfil
+      ? {
+          nombreCompleto: serv.PerfilTrabajador.perfil.nombreCompleto,
+          fotoUrl: serv.PerfilTrabajador.perfil.fotoUrl,
+          telefono: serv.PerfilTrabajador.perfil.telefono,
+        }
+      : { nombreCompleto: "Desconocido", fotoUrl: null, telefono: null },
+    imagenes: serv.imagenes
+  .sort((a, b) => a.orden - b.orden)
+  .map((img) => ({
+    id: img.id,
+    url: img.imagenUrl,
+    orden: img.orden,
+  })),
+    creadoEn: serv.creadoEn,
+    estadoModeracion: serv.estadoModeracion,
+  }));
+
   return {
-    items,
+    items: formattedItems,
     pagination: {
       page: Number(page),
       pageSize: Number(pageSize),
@@ -125,6 +166,7 @@ export async function listPublicationsService(
     },
   };
 }
+
 
 
 export const updatePublicationService = async (servicioId, data) => {
@@ -213,3 +255,100 @@ export const deleteServiceImageService = async (perfilTrabajadorId, servicioId, 
   return { success: true,
      imagen_eliminada: imagenId };
 };
+
+export async function listSolicitudesRecibidasService(perfilTrabajadorId) {
+  const solicitudes = await prisma.solicitudServicio.findMany({
+    where: {
+      servicio: { perfilTrabajadorId },
+    },
+    orderBy: { creadoEn: "desc" },
+    include: {
+      cliente: {
+        select: {
+          id: true,
+          email: true,
+          telefono: true,
+          perfil: {
+            select: {
+              nombreCompleto: true,
+              fotoUrl: true,
+            },
+          },
+        },
+      },
+      servicio: {
+        select: {
+          id: true,
+          titulo: true,
+          precio: true,
+          Oficio: {
+            select: { nombre: true },
+          },
+        },
+      },
+    },
+  });
+
+  return solicitudes.map((sol) => ({
+    id: sol.id,
+    mensaje: sol.mensaje,
+    fechaSolicitada: sol.fechaSolicitada,
+    creadoEn: sol.creadoEn,
+    estado: sol.estado,
+    cliente: {
+      id: sol.cliente.id,
+      nombreCompleto: sol.cliente.perfil?.nombreCompleto || "Desconocido",
+      fotoUrl: sol.cliente.perfil?.fotoUrl || null,
+      telefono: sol.cliente.telefono || null,
+      email: sol.cliente.email,
+    },
+    servicio: {
+      id: sol.servicio.id,
+      titulo: sol.servicio.titulo,
+      precio: sol.servicio.precio,
+      oficio: sol.servicio.Oficio?.nombre || "Sin oficio",
+    },
+  }));
+}
+
+export async function aceptarSolicitudService(solicitudId, perfilTrabajadorId) {
+  const solicitud = await prisma.solicitudServicio.findUnique({
+    where: { id: solicitudId },
+    include: { servicio: true },
+  });
+
+  if (!solicitud) throw new Error("Solicitud no encontrada");
+  if (solicitud.servicio.perfilTrabajadorId !== perfilTrabajadorId)
+    throw new Error("No autorizado para aceptar esta solicitud");
+
+  if (solicitud.estado !== "PENDIENTE")
+    throw new Error("Solo se pueden aceptar solicitudes pendientes");
+
+  const updated = await prisma.solicitudServicio.update({
+    where: { id: solicitudId },
+    data: { estado: "ACEPTADA" },
+  });
+
+  return updated;
+}
+
+export async function rechazarSolicitudService(solicitudId, perfilTrabajadorId) {
+  const solicitud = await prisma.solicitudServicio.findUnique({
+    where: { id: solicitudId },
+    include: { servicio: true },
+  });
+
+  if (!solicitud) throw new Error("Solicitud no encontrada");
+  if (solicitud.servicio.perfilTrabajadorId !== perfilTrabajadorId)
+    throw new Error("No autorizado para rechazar esta solicitud");
+
+  if (solicitud.estado !== "PENDIENTE")
+    throw new Error("Solo se pueden rechazar solicitudes pendientes");
+
+  const updated = await prisma.solicitudServicio.update({
+    where: { id: solicitudId },
+    data: { estado: "RECHAZADA" },
+  });
+
+  return updated;
+}

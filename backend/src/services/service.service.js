@@ -43,8 +43,17 @@ export const listAllPublicationsService = async ({
       skip,
       take,
       include: {
-        imagenes: true,
-        Oficio: { select: { id: true, nombre: true } },
+        imagenes: {
+          select: {
+            id: true,
+            imagenUrl: true,
+            orden: true, // 👈 añadimos esto
+          },
+          orderBy: { orden: "asc" }, // 👈 opcional, para mantener el orden
+        },
+        Oficio: {
+          select: { id: true, nombre: true },
+        },
         PerfilTrabajador: {
           include: {
             perfil: {
@@ -75,7 +84,11 @@ export const listAllPublicationsService = async ({
       fotoUrl: serv.PerfilTrabajador?.perfil?.fotoUrl || null,
       telefono: serv.PerfilTrabajador?.perfil?.telefono || null,
     },
-    imagenes: serv.imagenes.map((img) => img.imagenUrl),
+    imagenes: serv.imagenes.map((img) => ({
+      id: img.id,
+      url: img.imagenUrl,
+      orden: img.orden,
+    })),
     creadoEn: serv.creadoEn,
   }));
 
@@ -87,5 +100,41 @@ export const listAllPublicationsService = async ({
       total,
       pages: Math.max(1, Math.ceil(total / Number(pageSize))),
     },
+  };
+};
+
+
+
+export const getServiceByIdService = async (servicioId) => {
+  const servicio = await prisma.servicio.findUnique({
+    where: { id: servicioId },
+    include: {
+      imagenes: { 
+        select: { 
+          id: true,
+          imagenUrl: true,
+          orden: true
+        },
+        orderBy: { orden: 'asc' } // Para que vengan ordenadas
+      },
+      Oficio: { select: { id: true, nombre: true } },
+    },
+  });
+
+  if (!servicio) throw new Error("Servicio no encontrado.");
+
+  return {
+    id: servicio.id,
+    titulo: servicio.titulo,
+    descripcion: servicio.descripcion,
+    precio: servicio.precio,
+    categoria: servicio.Oficio
+      ? { id: servicio.Oficio.id, nombre: servicio.Oficio.nombre }
+      : { id: null, nombre: "Sin categoría" },
+    imagenes: servicio.imagenes.map((img) => ({
+      id: img.id,
+      imagenUrl: img.imagenUrl,
+      orden: img.orden
+    }))
   };
 };
