@@ -70,26 +70,4 @@ router.delete(
   deleteServiceImageController
 );  
 
-//ruta para listar solicitudes recibidas
-router.get("/request/received", 
-    verifyToken,
-   requireRole("TRABAJADOR"),
-  listarSolicitudesRecibidas);
-
-
-//ruta para aceptar solicitud de servicio
-router.post("/request/:id/accept", 
-    verifyToken,
-   requireRole("TRABAJADOR"),
-  aceptarSolicitud);
-
-
-//ruta para rechazar solicitud de servicio
-router.post("/request/:id/reject",
-    verifyToken,
-   requireRole("TRABAJADOR"),
-   rechazarSolicitud);
-
-
-
 export default router;

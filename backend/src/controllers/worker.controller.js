@@ -5,9 +5,6 @@ import {
   updatePublicationService,
   addServiceImagesService,
   deleteServiceImageService,
-  listSolicitudesRecibidasService,
-  aceptarSolicitudService,
-  rechazarSolicitudService,
 } from "../services/worker.service.js";
 
 export const registerWorkerController = async (req, res) => {
@@ -117,41 +114,5 @@ export const deleteServiceImageController = async (req, res) => {
     res.status(200).json({ success: true, ...result });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
-  }
-};
-
-
-export const listarSolicitudesRecibidas = async (req, res) => {
-  try {
-    const perfilTrabajadorId = req.user.perfilTrabajadorId; // asumiendo autenticación
-    const solicitudes = await listSolicitudesRecibidasService(perfilTrabajadorId);
-    res.json({ success: true, items: solicitudes });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-export const aceptarSolicitud = async (req, res) => {
-  try {
-    const perfilTrabajadorId = req.user.perfilTrabajadorId;
-    const solicitudId = req.params.id;
-    const result = await aceptarSolicitudService(solicitudId, perfilTrabajadorId);
-    res.json({ success: true, solicitud: result });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
-
-export const rechazarSolicitud = async (req, res) => {
-  try {
-    const perfilTrabajadorId = req.user.perfilTrabajadorId;
-    const solicitudId = req.params.id;
-    const result = await rechazarSolicitudService(solicitudId, perfilTrabajadorId);
-    res.json({ success: true, solicitud: result });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ success: false, message: error.message });
   }
 };

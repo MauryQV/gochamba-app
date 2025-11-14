@@ -43,17 +43,8 @@ export const listAllPublicationsService = async ({
       skip,
       take,
       include: {
-        imagenes: {
-          select: {
-            id: true,
-            imagenUrl: true,
-            orden: true, // 👈 añadimos esto
-          },
-          orderBy: { orden: "asc" }, // 👈 opcional, para mantener el orden
-        },
-        Oficio: {
-          select: { id: true, nombre: true },
-        },
+        imagenes: true,
+        Oficio: { select: { id: true, nombre: true } },
         PerfilTrabajador: {
           include: {
             perfil: {
@@ -84,11 +75,7 @@ export const listAllPublicationsService = async ({
       fotoUrl: serv.PerfilTrabajador?.perfil?.fotoUrl || null,
       telefono: serv.PerfilTrabajador?.perfil?.telefono || null,
     },
-    imagenes: serv.imagenes.map((img) => ({
-      id: img.id,
-      url: img.imagenUrl,
-      orden: img.orden,
-    })),
+    imagenes: serv.imagenes.map((img) => img.imagenUrl),
     creadoEn: serv.creadoEn,
   }));
 
@@ -102,7 +89,6 @@ export const listAllPublicationsService = async ({
     },
   };
 };
-
 
 
 export const getServiceByIdService = async (servicioId) => {
