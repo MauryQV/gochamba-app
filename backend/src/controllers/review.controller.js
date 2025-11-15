@@ -17,6 +17,7 @@ export const crearReseñaController = async (req, res) => {
       comentario
     );
 
+
     res.json({ success: true, reseña });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
@@ -29,6 +30,7 @@ export const getReseñasPerfilController = async (req, res) => {
     const { usuarioId } = req.params;
 
     const reseñas = await getReseñasPerfilService(usuarioId);
+    
 
     return res.json({
       success: true,
