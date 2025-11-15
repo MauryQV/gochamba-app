@@ -23,7 +23,8 @@ export const getSolicitudesTrabajadorService = async (perfilTrabajadorId) => {
         select: {
           id: true,
           titulo: true,
-          precio: true
+          precio: true,
+          descripcion: true
         }
       }
     }
