@@ -110,7 +110,7 @@ export default function TwoScreen() {
             <MenuItem
               icon={<HardHat size={22} color="white" />}
               title="Perfil de trabajador"
-              onPress={() => console.log("Perfil")}
+              onPress={() => router.push("/options/worker-profile")}
             />
           ) : (
             <MenuItem
