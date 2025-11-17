@@ -23,12 +23,13 @@ export const useWorkerReviews = (userId: string) => {
       const response = await getWorkerReviews(userId, token);
       const reviewsData = response.data || [];
       setReviews(reviewsData);
-      
+
       // Calculate average rating from reviews
-      const avgRating = reviewsData.length > 0
-        ? reviewsData.reduce((sum, review) => sum + review.calificacion, 0) / reviewsData.length
-        : 0;
-      
+      const avgRating =
+        reviewsData.length > 0
+          ? reviewsData.reduce((sum, review) => sum + review.calificacion, 0) / reviewsData.length
+          : 0;
+
       setAverageRating(avgRating);
       setTotalReviews(response.total || 0);
     } catch (err: any) {
