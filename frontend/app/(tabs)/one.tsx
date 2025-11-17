@@ -2,21 +2,29 @@ import { StyleSheet } from "react-native";
 
 import Spinner from "@/components/Spinner";
 import { useServices } from "@/src/hooks/use-services";
-import { ChevronDown } from "lucide-react-native";
+import { ChevronDown, ArrowRight } from "lucide-react-native";
 import { useState } from "react";
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, Text, TextInput, TouchableOpacity, View, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 
 export default function TabOneScreen() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
   const [ShowCategories, setShowCategories] = useState(false);
   const [price, setPrice] = useState("");
-  const { listServices, categories } = useServices();
+  const { listServices, categories, refetch } = useServices();
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   return (
     <View className="flex-1 bg-white">
       {/* Filtros */}
+
       <View className="flex-row px-4 mt-4 space-x-3">
         {/* Categoría */}
         <View className="flex-1 relative">
@@ -44,17 +52,23 @@ export default function TabOneScreen() {
             </View>
           )}
         </View>
-        {/* Precio */}
-        <TextInput
-          className="w-28 h-12 bg-gray-100 border border-gray-300 rounded-lg px-3"
-          placeholder="Precio"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
+      </View>
+      {/* Button for services in progress */}
+      <View className=" px-5 pt-4 pb-4">
+        <TouchableOpacity
+          onPress={() => router.push("/works/get-services-in-progress")}
+          className={`flex flex-row justify-center mt-2 py-3 rounded-lg items-center bg-blue-600 gap-x-2`}
+          activeOpacity={0.8}
+        >
+          <Text className="text-white font-interSemiBold">Ver servicios en curso</Text>
+          <ArrowRight size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
       {/* Lista de servicios */}
-      <ScrollView className="mt-6 px-4">
+      <ScrollView
+        className="mt-6 px-4"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         {!listServices ? (
           <View className=" mt-10 flex flex-col items-center justify-center">
             <Spinner h={36} w={36} />
