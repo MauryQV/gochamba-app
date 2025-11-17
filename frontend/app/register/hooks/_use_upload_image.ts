@@ -12,7 +12,6 @@ const pickImage = async (): Promise<string | null> => {
   });
 
   if (!result.canceled && result.assets.length > 0) {
-    console.log("Selected image result:", result.assets[0].uri);
     return result.assets[0].uri;
   }
 

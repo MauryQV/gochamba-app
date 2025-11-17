@@ -5,6 +5,7 @@ import {
   createUserService,
   loginUserService,
 } from "../services/auth.service.js";
+import  prisma  from "../../config/prismaClient.js";
 
 import { generateAppToken } from "../auth/tokenService.js";
 
@@ -12,13 +13,42 @@ export const verifyGoogleAuth = async (req, res) => {
   try {
     const { id_token } = req.body;
     const payload = await verifyGoogleToken(id_token);
+
+    // Buscar o crear usuario
     const { user, wasCreated } = await findOrCreateGoogleUser(payload);
 
-    const token = generateAppToken(user.id);
+    // Verificar roles
+    const es_trabajador = user.roles.some((rol) => rol.rol === "TRABAJADOR");
+
+    // Obtener perfilTrabajadorId si aplica
+    let perfilTrabajadorId = null;
+    if (es_trabajador && user.perfil?.id) {
+      const perfilTrabajador = await prisma.perfilTrabajador.findUnique({
+        where: { perfilId: user.perfil.id },
+        select: { id: true },
+      });
+      perfilTrabajadorId = perfilTrabajador?.id || null;
+    }
+
+    // Generar token
+    const token = generateAppToken({
+      usuarioId: user.id,
+      perfilId: user.perfil?.id,
+      perfilTrabajadorId,
+      roles: user.roles.map((r) => r.rol),
+    });
+
+    // Eliminar datos sensibles
+    const { password: _, ...userWithoutPassword } = user;
 
     return res.json({
+      success: true,
       token,
-      user,
+      user: {
+        ...userWithoutPassword,
+        es_trabajador,
+      },
+      perfilTrabajadorId,
       wasCreated,
       needsSetup: !user.es_configurado,
       message: wasCreated
@@ -26,9 +56,11 @@ export const verifyGoogleAuth = async (req, res) => {
         : "Inicio de sesión con Google exitoso",
     });
   } catch (error) {
+    console.error("Error en verifyGoogleAuth:", error);
     res.status(500).json({ error: "Error verificando Google token" });
   }
 };
+
 
 export const completeGoogleRegistration = async (req, res) => {
   try {

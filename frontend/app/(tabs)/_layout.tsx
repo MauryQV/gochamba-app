@@ -44,7 +44,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="worker"
         options={{
-          title: "Servicios",
+          title: "Solicitudes",
           tabBarIcon: ({ color }) => <Hammer size={28} style={{ marginBottom: -3 }} color={color} />,
           href: isWorker ? "/(tabs)/worker" : null,
         }}
