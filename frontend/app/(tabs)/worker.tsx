@@ -1,189 +1,219 @@
 import Spinner from "@/components/Spinner";
-import { usePublicationsWorker } from "@/src/hooks/use-publications-worker";
-import { useRouter } from "expo-router";
-import { ChevronDown, DeleteIcon, Eye, Pencil } from "lucide-react-native";
+import { useClientRequests } from "@/src/hooks/use-client-requests";
+import { useRegister } from "@/app/register/_register-context";
+import { approveRequest, rejectRequest } from "@/src/services/requests.service";
 import { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View, RefreshControl } from "react-native";
+import { ArrowRight } from "lucide-react-native";
+import { useRouter } from "expo-router";
 
 export default function WorkerTab() {
-  const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
-  const [ShowCategories, setShowCategories] = useState(false);
-  const [price, setPrice] = useState("");
+  const { requests, isLoading, refetch } = useClientRequests();
+  const { setupData } = useRegister();
+  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  const { listServices, categories } = usePublicationsWorker();
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
-  const servicios = [
-    {
-      id: 1,
-      title: "Reparación de Fugas",
-      category: "Plomería",
-      trabajador: "Juan Pérez",
-      ubicacion: "Av. Principal 12345, Cochabamba",
-    },
-    {
-      id: 2,
-      title: "Instalación Eléctrica",
-      category: "Electricidad",
-      trabajador: "María López",
-      ubicacion: "Calle Aroma, esquina con Av. Siempre Viva",
-    },
-  ];
+  const handleApprove = async (requestId: string) => {
+    const token = setupData?.token;
+    if (!token) {
+      Alert.alert("Error", "No se pudo autenticar la solicitud.");
+      return;
+    }
 
-  const handlePublicarServicio = () => {
-    // usar router.push para navegar con expo-router
-    router.push("/works/PublishServiceScreen");
+    Alert.alert("Aceptar solicitud", "¿Estás seguro de que deseas aceptar esta solicitud?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Aceptar",
+        onPress: async () => {
+          try {
+            setProcessingId(requestId);
+            await approveRequest(requestId, token);
+            Alert.alert("Éxito", "La solicitud ha sido aceptada.");
+            await refetch();
+          } catch (error: any) {
+            console.error("Error approving request:", error);
+            Alert.alert("Error", error?.message || "No se pudo aceptar la solicitud.");
+          } finally {
+            setProcessingId(null);
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleReject = async (requestId: string) => {
+    const token = setupData?.token;
+    if (!token) {
+      Alert.alert("Error", "No se pudo autenticar la solicitud.");
+      return;
+    }
+
+    Alert.alert("Rechazar solicitud", "¿Estás seguro de que deseas rechazar esta solicitud?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Rechazar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            setProcessingId(requestId);
+            await rejectRequest(requestId, token);
+            Alert.alert("Éxito", "La solicitud ha sido rechazada.");
+            await refetch();
+          } catch (error: any) {
+            console.error("Error rejecting request:", error);
+            Alert.alert("Error", error?.message || "No se pudo rechazar la solicitud.");
+          } finally {
+            setProcessingId(null);
+          }
+        },
+      },
+    ]);
+  };
+
+  const getStatusBadge = (estado: string) => {
+    switch (estado) {
+      case "PENDIENTE":
+        return { text: "PENDIENTE", bg: "bg-yellow-100", textColor: "text-yellow-700" };
+      case "ACEPTADA":
+        return { text: "ACEPTADA", bg: "bg-green-100", textColor: "text-green-700" };
+      case "RECHAZADA":
+        return { text: "RECHAZADA", bg: "bg-red-100", textColor: "text-red-700" };
+      case "COMPLETADA":
+        return { text: "COMPLETADA", bg: "bg-blue-100", textColor: "text-blue-700" };
+      default:
+        return { text: estado, bg: "bg-gray-100", textColor: "text-gray-700" };
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   };
 
   return (
     <View className="flex-1 bg-white">
-      {/* Filtros */}
-      <View className="flex-row px-4 mt-4 space-x-3">
-        {/* Categoría */}
-        <View className="flex-1 relative">
-          <TouchableOpacity
-            className="h-12 bg-gray-100 border border-gray-300 rounded-lg flex-row items-center justify-between px-3"
-            onPress={() => setShowCategories(!ShowCategories)}
-          >
-            <Text className="text-gray-700">{selectedCategory}</Text>
-            <ChevronDown size={18} color="#555" />
-          </TouchableOpacity>
-          {ShowCategories && (
-            <View className="absolute w-full bg-white rounded-lg border border-gray-300 mt-14 z-10">
-              {categories.map((cat, idx) => (
-                <TouchableOpacity
-                  key={idx}
-                  className="px-3 py-2 border-b border-gray-200"
-                  onPress={() => {
-                    setSelectedCategory(cat.name);
-                    setShowCategories(false);
-                  }}
-                >
-                  <Text>{cat.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* Precio */}
-        <TextInput
-          className="w-28 h-12 bg-gray-100 border border-gray-300 rounded-lg px-3"
-          placeholder="Precio"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
+      {/* Header */}
+      <View className=" px-5 pt-4 pb-4">
+        <Text className="text-black text-2xl font-interBold mt-1">Solicitudes de Clientes</Text>
+        <TouchableOpacity
+          onPress={() => router.push("/works/get-own-services")}
+          className={`flex flex-row justify-center mt-2 py-3 rounded-lg items-center bg-blue-600 gap-x-2`}
+          activeOpacity={0.8}
+        >
+          <Text className="text-white font-interSemiBold">Ver servicios ofrecidos</Text>
+          <ArrowRight size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
 
-      {/* Lista de servicios */}
-      <ScrollView className="mt-6 px-4">
-        {!listServices ? (
-          <View className=" mt-10 flex flex-col items-center justify-center">
+      {/* Content */}
+      <ScrollView
+        className="flex-1 px-4"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {isLoading ? (
+          <View className="mt-10 flex flex-col items-center justify-center">
             <Spinner h={36} w={36} />
-            <Text className="text-center text-xs mt-4 text-gray-600">Cargando servicios disponibles</Text>
+            <Text className="text-center text-xs mt-4 text-gray-600">Cargando solicitudes...</Text>
           </View>
-        ) : listServices.length > 0 ? (
-          listServices.map((s) => (
-            <View key={s.id} className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm">
-              {/* Header */}
-              <View className="flex-row items-center mb-3">
-                <View>
-                  <View className="flex flex-row items-center justify-between">
-                    <Text className="text-lg font-semibold text-blue-600 w-[100%]">{s.title}</Text>
-                  </View>
-                  <Text className="text-gray-700 text-sm">Categoría: {s.category}</Text>
-                  {s.description && (
-                    <Text className="text-gray-700 text-sm" numberOfLines={2} ellipsizeMode="tail">
-                      <Text className="font-semibold">Descripción: </Text>
-                      {s.description}
-                    </Text>
-                  )}
-                </View>
-              </View>
-
-              {/* Botón */}
-              <View className="space-y-2 flex flex-row w-full justify-between">
-                <TouchableOpacity
-                  onPress={() => {
-                    // Navigate to edit screen with service data
-                    const serviceToEdit = {
-                      id: s.id,
-                      titulo: s.title,
-                      descripcion: s.description,
-                      precio: s.price || 0,
-                      oficioId: s.jobId || "",
-                      categoria: s.category,
-                      imagenes: s.images,
-                    };
-                    router.push({
-                      pathname: "/works/edit-service-screen",
-                      params: { service: JSON.stringify(serviceToEdit) },
-                    });
-                  }}
-                  className="flex gap-x-2 flex-row justify-center bg-blue-600 py-2 rounded-lg items-center w-[30%]"
-                >
-                  <Pencil color="white" height={15} width={15} />
-                  <Text className="text-white font-semibold">Editar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    // Navigate to view screen with service data
-                    const serviceToView = {
-                      id: s.id,
-                      titulo: s.title,
-                      descripcion: s.description,
-                      precio: s.price || 0,
-                      categoria: s.category,
-                      imagenes: s.images,
-                    };
-                    router.push({
-                      pathname: "/works/see-service-screen",
-                      params: { service: JSON.stringify(serviceToView) },
-                    });
-                  }}
-                  className="flex gap-x-2 flex-row justify-center bg-blue-600 py-2 rounded-lg items-center w-[30%]"
-                >
-                  <Eye color="white" height={20} width={20} />
-                  <Text className="text-white font-semibold">Ver</Text>
-                </TouchableOpacity>
-                <TouchableOpacity className="bg-red-600 py-2 rounded-lg items-center w-[30%]">
-                  <Text className="text-white font-semibold">Eliminar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))
+        ) : !requests || requests.length === 0 ? (
+          <View className="mt-10 flex flex-col items-center justify-center">
+            <Text className="text-center text-lg mt-4 text-gray-600">No tienes solicitudes.</Text>
+          </View>
         ) : (
-          <View className=" mt-10 flex flex-col items-center justify-center">
-            <Text className="text-center text-lg mt-4 text-gray-600">No tienes publicaciones.</Text>
-          </View>
+          requests.map((solicitud) => {
+            const statusBadge = getStatusBadge(solicitud.estado);
+            const isProcessing = processingId === solicitud.id;
+
+            return (
+              <View key={solicitud.id} className="bg-white border border-gray-200 rounded-2xl p-4 my-3 shadow-sm">
+                {/* Client Info Header */}
+                <View className="flex-row items-center mb-3">
+                  <View className="rounded-full overflow-hidden border-2 border-blue-500 mr-3">
+                    <Image
+                      source={{ uri: solicitud.cliente.perfil.fotoUrl }}
+                      className="w-12 h-12"
+                      style={{ width: 48, height: 48 }}
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-base font-poppinsSemiBold text-gray-900">
+                      {solicitud.cliente.perfil.nombreCompleto}
+                    </Text>
+                    <View className={`${statusBadge.bg} px-2 py-1 rounded-full self-start mt-1`}>
+                      <Text className={`${statusBadge.textColor} text-xs font-interSemiBold`}>{statusBadge.text}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Service Title */}
+                <View className="mb-2">
+                  <Text className="text-lg font-poppinsSemiBold text-blue-600">{solicitud.servicio.titulo}</Text>
+                </View>
+
+                {/* Service Description */}
+                <View className="mb-2">
+                  <Text className="text-gray-700 text-sm">
+                    <Text className="font-interSemiBold">Descripción: </Text>
+                    {solicitud.servicio.descripcion}
+                  </Text>
+                </View>
+
+                {/* Price */}
+                <View className="mb-3">
+                  <Text className="text-gray-700 text-sm">
+                    <Text className="font-interSemiBold">Presupuesto ofrecido: </Text>
+                    Bs. {solicitud.servicio.precio}
+                  </Text>
+                </View>
+
+                {/* Request Date */}
+                <View className="mb-3">
+                  <Text className="text-gray-600 text-xs">Fecha solicitada: {formatDate(solicitud.creadoEn)}</Text>
+                </View>
+
+                {/* Action Buttons - Only show for PENDIENTE status */}
+                {solicitud.estado === "PENDIENTE" && (
+                  <View className="flex flex-row gap-x-3">
+                    <TouchableOpacity
+                      onPress={() => handleApprove(solicitud.id)}
+                      disabled={isProcessing}
+                      className={`flex-1 py-3 rounded-lg items-center ${isProcessing ? "bg-gray-400" : "bg-blue-600"}`}
+                      activeOpacity={0.8}
+                    >
+                      <Text className="text-white font-interSemiBold">
+                        {isProcessing ? "Procesando..." : "Aceptar"}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => handleReject(solicitud.id)}
+                      disabled={isProcessing}
+                      className={`flex-1 py-3 rounded-lg items-center border ${
+                        isProcessing ? "bg-gray-100 border-gray-300" : "bg-white border-gray-300"
+                      }`}
+                      activeOpacity={0.8}
+                    >
+                      <Text className={`font-interSemiBold ${isProcessing ? "text-gray-400" : "text-gray-700"}`}>
+                        {isProcessing ? "Procesando..." : "Rechazar"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            );
+          })
         )}
       </ScrollView>
-
-      {/*Botón flotante Publicar Servicio */}
-      <TouchableOpacity
-        className="bg-blue-600 w-16 h-16 rounded-full items-center justify-center absolute bottom-8 right-6 shadow-lg"
-        onPress={handlePublicarServicio}
-      >
-        <Text className="text-white text-2xl font-bold">+</Text>
-      </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-});
