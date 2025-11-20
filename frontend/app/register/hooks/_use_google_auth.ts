@@ -47,7 +47,7 @@ export const useGoogleAuth = () => {
             params: { setup: JSON.stringify(res) },
           });
         } else {
-          setSetupData({ token: res?.token, rol: res?.user?.roles?.map((item: Rol) => item.rol) });
+          setSetupData({ ...res, token: res?.token, rol: res?.user?.roles?.map((item: Rol) => item.rol) });
           router.push("/one");
         }
       } else {
