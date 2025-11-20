@@ -19,6 +19,7 @@ export default function TabOneScreen() {
     await refetch();
     setRefreshing(false);
   };
+
   const filteredServices =
     selectedCategory === "Seleccionar Categoria"
       ? listServices
@@ -26,8 +27,8 @@ export default function TabOneScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Filtros */}
 
+      {/* Filtros */}
       <View className="flex-row px-4 mt-4 space-x-3">
         {/* Categoría */}
         <View className="flex-1 relative">
@@ -41,6 +42,18 @@ export default function TabOneScreen() {
 
           {ShowCategories && (
             <View className="absolute w-full bg-white rounded-lg border border-gray-300 mt-14 z-10">
+
+              {/*Mostrar todos*/}
+              <TouchableOpacity
+                className="px-3 py-2 border-b border-gray-300 bg-gray-100"
+                onPress={() => {
+                  setSelectedCategory("Seleccionar Categoria");
+                  setShowCategories(false);
+                }}
+              >
+                <Text className="font-semibold text-gray-700">Todas las categorías</Text>
+              </TouchableOpacity>
+
               {categories.map((cat) => (
                 <TouchableOpacity
                   key={cat.id}
@@ -58,11 +71,12 @@ export default function TabOneScreen() {
         </View>
       </View>
 
-      {/* Servicios en curso */}
+      {/* Button for services in progress */}
       <View className=" px-5 pt-4 pb-4">
         <TouchableOpacity
           onPress={() => router.push("/works/get-services-in-progress")}
           className={`flex flex-row justify-center mt-2 py-3 rounded-lg items-center bg-blue-600 gap-x-2`}
+          activeOpacity={0.8}
         >
           <Text className="text-white font-interSemiBold">Ver servicios en curso</Text>
           <ArrowRight size={20} color="#fff" />
@@ -85,6 +99,7 @@ export default function TabOneScreen() {
               key={s.id}
               className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm"
               onPress={() => {
+                // Navigate to service detail screen
                 const serviceToView = {
                   id: s.id,
                   title: s.title,
@@ -100,7 +115,9 @@ export default function TabOneScreen() {
                   params: { service: JSON.stringify(serviceToView) },
                 });
               }}
+              activeOpacity={0.7}
             >
+              {/* Header */}
               <View className="flex-row items-center mb-3">
                 <View className="flex-1">
                   <View className="flex flex-row items-center justify-between">
@@ -114,8 +131,11 @@ export default function TabOneScreen() {
                 </View>
               </View>
 
+              {/* Info adicional */}
               <View className="bg-blue-50 px-3 py-2 rounded-lg">
-                <Text className="text-blue-700 font-semibold text-center">Toca para ver detalles y solicitar</Text>
+                <Text className="text-blue-700 font-semibold text-center">
+                  Toca para ver detalles y solicitar
+                </Text>
               </View>
             </TouchableOpacity>
           ))
@@ -126,5 +146,9 @@ export default function TabOneScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center" },
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
