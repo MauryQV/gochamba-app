@@ -92,7 +92,7 @@ export default function ReportPublicationScreen() {
             <Image source={{ uri: service.profile_photo }} className="w-12 h-12 rounded-full mr-3" />
             <View className="flex-1">
               <Text className="font-semibold text-base">{service.trabajador}</Text>
-              <Text className="text-gray-600 text-sm">Electricista con 5 años de experiencia</Text>
+              <Text className="text-gray-600 text-sm">Trabajador en GoChamba</Text>
             </View>
           </View>
           <View className="mt-3 pt-3 border-t border-gray-200">
