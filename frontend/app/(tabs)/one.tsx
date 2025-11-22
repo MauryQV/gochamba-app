@@ -2,10 +2,10 @@ import { StyleSheet } from "react-native";
 
 import Spinner from "@/components/Spinner";
 import { useServices } from "@/src/hooks/use-services";
-import { ChevronDown, ArrowRight } from "lucide-react-native";
-import { useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
+import { ArrowRight, ChevronDown } from "lucide-react-native";
+import { useState } from "react";
+import { Image, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function TabOneScreen() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
@@ -13,11 +13,68 @@ export default function TabOneScreen() {
   const { listServices, categories, refetch } = useServices();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedService, setSelectedService] = useState<any>(null);
+  const [pressTimer, setPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [longPressTriggered, setLongPressTriggered] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
+  };
+
+  const handleLongPress = (service: any) => {
+    setLongPressTriggered(true);
+    setSelectedService(service);
+    setShowReportModal(true);
+  };
+
+  const handlePressIn = (service: any) => {
+    setLongPressTriggered(false);
+    const timer = setTimeout(() => {
+      handleLongPress(service);
+    }, 1000); // 1 second
+    setPressTimer(timer);
+  };
+
+  const handlePressOut = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
+  const handlePress = (service: any) => {
+    // Only navigate if long press wasn't triggered
+    if (!longPressTriggered) {
+      const serviceToView = {
+        id: service.id,
+        title: service.title,
+        description: service.description,
+        price: service.price || 0,
+        category: service.category,
+        trabajador: service.trabajador,
+        profile_photo: service.profile_photo,
+        images: service.images,
+      };
+      router.push({
+        pathname: "/works/service-detail-screen",
+        params: { service: JSON.stringify(serviceToView) },
+      });
+    }
+    // Reset the flag
+    setLongPressTriggered(false);
+  };
+
+  const navigateToReport = () => {
+    setShowReportModal(false);
+    if (selectedService) {
+      router.push({
+        pathname: "/report/report-publication",
+        params: { service: JSON.stringify(selectedService) },
+      });
+    }
   };
 
   const filteredServices =
@@ -27,7 +84,6 @@ export default function TabOneScreen() {
 
   return (
     <View className="flex-1 bg-white">
-
       {/* Filtros */}
       <View className="flex-row px-4 mt-4 space-x-3">
         {/* Categoría */}
@@ -42,7 +98,6 @@ export default function TabOneScreen() {
 
           {ShowCategories && (
             <View className="absolute w-full bg-white rounded-lg border border-gray-300 mt-14 z-10">
-
               {/*Mostrar todos*/}
               <TouchableOpacity
                 className="px-3 py-2 border-b border-gray-300 bg-gray-100"
@@ -98,23 +153,16 @@ export default function TabOneScreen() {
             <TouchableOpacity
               key={s.id}
               className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm"
-              onPress={() => {
-                // Navigate to service detail screen
-                const serviceToView = {
+              onPress={() => handlePress(s)}
+              onPressIn={() =>
+                handlePressIn({
                   id: s.id,
                   title: s.title,
-                  description: s.description,
-                  price: s.price || 0,
-                  category: s.category,
                   trabajador: s.trabajador,
                   profile_photo: s.profile_photo,
-                  images: s.images,
-                };
-                router.push({
-                  pathname: "/works/service-detail-screen",
-                  params: { service: JSON.stringify(serviceToView) },
-                });
-              }}
+                })
+              }
+              onPressOut={handlePressOut}
               activeOpacity={0.7}
             >
               {/* Header */}
@@ -133,14 +181,39 @@ export default function TabOneScreen() {
 
               {/* Info adicional */}
               <View className="bg-blue-50 px-3 py-2 rounded-lg">
-                <Text className="text-blue-700 font-semibold text-center">
-                  Toca para ver detalles y solicitar
-                </Text>
+                <Text className="text-blue-700 font-semibold text-center">Toca para ver detalles y solicitar</Text>
               </View>
             </TouchableOpacity>
           ))
         )}
       </ScrollView>
+
+      {/* Report Modal */}
+      <Modal
+        visible={showReportModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowReportModal(false)}
+      >
+        <TouchableOpacity
+          className="flex-1 bg-black/50 justify-center items-center"
+          activeOpacity={1}
+          onPress={() => setShowReportModal(false)}
+        >
+          <View className="bg-white rounded-2xl p-6 mx-6 w-80" onStartShouldSetResponder={() => true}>
+            <Text className="text-xl font-bold mb-2 text-center">REPORTAR</Text>
+            <Text className="text-gray-600 mb-6 text-center">¿Desea reportar este servicio?</Text>
+
+            <TouchableOpacity
+              onPress={navigateToReport}
+              className="bg-blue-600 py-3 rounded-lg mb-3"
+              activeOpacity={0.8}
+            >
+              <Text className="text-white text-center font-semibold">REPORTAR</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
