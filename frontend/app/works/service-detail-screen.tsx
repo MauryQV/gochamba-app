@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, Image, TouchableOpacity, Alert, ActivityIndicator } from "react-native";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { requestService } from "@/src/services/works.service";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Flag, MoreVertical } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Image, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useRegister } from "../register/_register-context";
 
 export default function ServiceDetailScreen() {
@@ -31,6 +32,7 @@ export default function ServiceDetailScreen() {
 
   const [images, setImages] = useState<string[]>([]);
   const [isRequesting, setIsRequesting] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   // Initialize with service data
   useEffect(() => {
@@ -83,9 +85,35 @@ export default function ServiceDetailScreen() {
     }
   };
 
+  const handleReport = () => {
+    setShowMenu(false);
+    if (serviceData) {
+      router.push({
+        pathname: "/report/report-publication",
+        params: {
+          service: JSON.stringify({
+            id: serviceData.id,
+            title: data.titulo,
+            trabajador: data.trabajador,
+            profile_photo: data.profilePhoto,
+          }),
+        },
+      });
+    }
+  };
+
   return (
     <View className="flex-1 bg-white relative">
-      <Stack.Screen options={headerOptions} />
+      <Stack.Screen
+        options={{
+          ...headerOptions,
+          headerRight: () => (
+            <TouchableOpacity onPress={() => setShowMenu(true)} className="" activeOpacity={0.7}>
+              <MoreVertical size={24} color="#fff" />
+            </TouchableOpacity>
+          ),
+        }}
+      />
 
       {/* Círculos decorativos */}
       <View className="absolute bottom-0 right-0 pointer-events-none">
@@ -171,6 +199,25 @@ export default function ServiceDetailScreen() {
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Menu Modal */}
+      <Modal visible={showMenu} transparent animationType="fade" onRequestClose={() => setShowMenu(false)}>
+        <TouchableOpacity className="flex-1" activeOpacity={1} onPress={() => setShowMenu(false)}>
+          <View
+            className="absolute top-24 right-2 bg-white rounded-lg min-w-[200px]"
+            onStartShouldSetResponder={() => true}
+          >
+            <TouchableOpacity
+              onPress={handleReport}
+              className="flex-row items-center px-4 py-4 border rounded-lg border-gray-300"
+              activeOpacity={0.7}
+            >
+              <Flag size={20} color="#EF4444" />
+              <Text className="text-gray-800 font-semibold ml-3">Reportar servicio</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
