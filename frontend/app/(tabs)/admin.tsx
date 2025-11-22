@@ -5,14 +5,15 @@ import { usePendingServices } from "@/src/hooks/use-pending-services";
 import { useRouter } from "expo-router";
 import { ArrowRight, ChevronDown } from "lucide-react-native";
 import { useState } from "react";
-import { Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function TabOneScreen() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
   const [ShowCategories, setShowCategories] = useState(false);
-  const { pendingServices, refetch } = usePendingServices();
+  const { pendingServices, refetch, rejectService } = usePendingServices();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -141,9 +142,72 @@ export default function TabOneScreen() {
                 </View>
               </View>
 
-              {/* Info adicional */}
-              <View className="bg-orange-50 px-3 py-2 rounded-lg">
-                <Text className="text-orange-700 font-semibold text-center">Toca para revisar y aprobar/rechazar</Text>
+              {/* Service Images */}
+              {s.images && s.images.length > 0 && (
+                <View className="flex-row gap-2 mb-3">
+                  {s.images.slice(0, 3).map((img) => (
+                    <View key={img.id} className="flex-1 h-20 rounded-lg overflow-hidden bg-gray-100">
+                      <Image source={{ uri: img.imagenUrl }} className="w-full h-full" resizeMode="cover" />
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Action Buttons */}
+              <View className="flex-row gap-2 mt-2">
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    Alert.alert("Rechazar Servicio", `¿Estás seguro de que deseas rechazar "${s.title}"?`, [
+                      { text: "Cancelar", style: "cancel" },
+                      {
+                        text: "Rechazar",
+                        style: "destructive",
+                        onPress: async () => {
+                          setProcessingId(s.id);
+                          const result = await rejectService(s.id);
+                          setProcessingId(null);
+                          if (result.success) {
+                            Alert.alert("Éxito", "El servicio ha sido rechazado");
+                          } else {
+                            Alert.alert("Error", result.error || "No se pudo rechazar el servicio");
+                          }
+                        },
+                      },
+                    ]);
+                  }}
+                  disabled={processingId === s.id}
+                  className={`flex-1 bg-red-600 py-3 rounded-lg ${processingId === s.id ? "opacity-50" : ""}`}
+                  activeOpacity={0.8}
+                >
+                  <Text className="text-white font-semibold text-center">
+                    {processingId === s.id ? "Procesando..." : "Rechazar"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    const serviceToView = {
+                      id: s.id,
+                      title: s.title,
+                      description: s.description,
+                      price: s.price || 0,
+                      category: s.category,
+                      trabajador: s.trabajador,
+                      profile_photo: s.profile_photo,
+                      images: s.images,
+                    };
+                    router.push({
+                      pathname: "/works/admin-service-review",
+                      params: { service: JSON.stringify(serviceToView) },
+                    });
+                  }}
+                  className="flex-1 bg-blue-600 py-3 rounded-lg"
+                  activeOpacity={0.8}
+                >
+                  <Text className="text-white font-semibold text-center">Revisar</Text>
+                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           ))
