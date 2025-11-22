@@ -41,4 +41,41 @@ export const adminService = {
     );
     return response.data;
   },
+  async getReportedServices(token: string) {
+    const response = await axios.get(`${BASE_URL}/admin/reports/services`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      timeout: REQUEST_TIMEOUT,
+    });
+    return response.data;
+  },
+  async unableService(reportId: string, token: string) {
+    const response = await axios.patch(
+      `${BASE_URL}/admin/report/${reportId}/unable-service`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        timeout: REQUEST_TIMEOUT,
+      }
+    );
+    return response.data;
+  },
+  async desestimateReport(reportId: string, token: string) {
+    const response = await axios.patch(
+      `${BASE_URL}/admin/report/${reportId}/desestimate`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        timeout: REQUEST_TIMEOUT,
+      }
+    );
+    return response.data;
+  },
 };

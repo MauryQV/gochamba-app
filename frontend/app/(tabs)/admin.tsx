@@ -80,7 +80,7 @@ export default function TabOneScreen() {
       {/* Button for pending services */}
       <View className=" px-5 pt-4 pb-4">
         <TouchableOpacity
-          onPress={() => router.push("/works/get-services-in-progress")}
+          onPress={() => router.push("/admin/get-reported-publications")}
           className={`flex flex-row justify-center mt-2 py-3 rounded-lg items-center bg-blue-600 gap-x-2`}
           activeOpacity={0.8}
         >
