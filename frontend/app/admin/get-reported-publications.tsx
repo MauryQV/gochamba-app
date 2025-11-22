@@ -1,11 +1,19 @@
 import Spinner from "@/components/Spinner";
 import { useReportedServices } from "@/src/hooks/use-reported-services";
-import { useRouter } from "expo-router";
-import { ArrowLeft, Eye, Trash2 } from "lucide-react-native";
+import { Stack, useRouter } from "expo-router";
+import { Eye, Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function GetReportedPublications() {
+  const headerOptions = {
+    headerTitle: "GoChamba",
+    headerStyle: { backgroundColor: "#2563eb" },
+    headerTintColor: "#fff",
+    headerTitleStyle: { fontFamily: "Poppins_900Black", fontSize: 30 },
+    headerTitleAlign: "center" as const,
+  };
+
   const router = useRouter();
   const { reportedServices, loading, refetch, unableService } = useReportedServices();
   const [refreshing, setRefreshing] = useState(false);
@@ -50,12 +58,11 @@ export default function GetReportedPublications() {
 
   return (
     <View className="flex-1 bg-white">
+      <Stack.Screen options={headerOptions} />
+
       {/* Header */}
-      <View className="bg-blue-600 pt-12 pb-6 px-4">
-        <TouchableOpacity onPress={() => router.back()} className="mb-4">
-          <ArrowLeft size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text className="text-white text-2xl font-bold">Publicaciones Reportadas</Text>
+      <View className="bg-white pt-6 pb-4 px-4">
+        <Text className="text-black text-2xl font-poppinsBold">Publicaciones Reportadas</Text>
       </View>
 
       <ScrollView

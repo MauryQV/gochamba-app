@@ -1,6 +1,6 @@
 import { usePendingServices } from "@/src/hooks/use-pending-services";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, CheckCircle, User, XCircle } from "lucide-react-native";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { CheckCircle, User, XCircle } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
@@ -21,6 +21,13 @@ export default function AdminServiceReview() {
   const { approveService, rejectService } = usePendingServices();
   const [loading, setLoading] = useState(false);
 
+  const headerOptions = {
+    headerTitle: "GoChamba",
+    headerStyle: { backgroundColor: "#2563eb" },
+    headerTintColor: "#fff",
+    headerTitleStyle: { fontFamily: "Poppins_900Black", fontSize: 30 },
+    headerTitleAlign: "center" as const,
+  };
   const service: ServiceDetail = params.service ? JSON.parse(params.service as string) : null;
 
   if (!service) {
@@ -90,12 +97,11 @@ export default function AdminServiceReview() {
 
   return (
     <View className="flex-1 bg-white">
+      <Stack.Screen options={headerOptions} />
+
       {/* Header */}
-      <View className="bg-blue-600 pt-12 pb-6 px-4">
-        <TouchableOpacity onPress={() => router.back()} className="mb-4">
-          <ArrowLeft size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text className="text-white text-2xl font-bold">Revisar Publicación</Text>
+      <View className="bg-white pt-6 pb-4 px-4">
+        <Text className="text-black text-2xl font-poppinsBold">Revisar Publicación</Text>
       </View>
 
       <ScrollView className="flex-1">

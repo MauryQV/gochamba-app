@@ -1,11 +1,18 @@
 import type { ReportedService } from "@/src/hooks/use-reported-services";
 import { useReportedServices } from "@/src/hooks/use-reported-services";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Trash2, XCircle } from "lucide-react-native";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Trash2, XCircle } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function ReviewReport() {
+  const headerOptions = {
+    headerTitle: "GoChamba",
+    headerStyle: { backgroundColor: "#2563eb" },
+    headerTintColor: "#fff",
+    headerTitleStyle: { fontFamily: "Poppins_900Black", fontSize: 30 },
+    headerTitleAlign: "center" as const,
+  };
   const params = useLocalSearchParams();
   const router = useRouter();
   const { unableService, desestimateReport } = useReportedServices();
@@ -88,12 +95,11 @@ export default function ReviewReport() {
 
   return (
     <View className="flex-1 bg-white">
+      <Stack.Screen options={headerOptions} />
+
       {/* Header */}
-      <View className="bg-blue-600 pt-12 pb-6 px-4">
-        <TouchableOpacity onPress={() => router.back()} className="mb-4">
-          <ArrowLeft size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text className="text-white text-2xl font-bold">Revisar Reporte</Text>
+      <View className="bg-white pt-6 pb-4 px-4">
+        <Text className="text-black text-2xl font-poppinsBold">Revisar Reporte</Text>
       </View>
 
       <ScrollView className="flex-1">
