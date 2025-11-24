@@ -29,7 +29,7 @@ export const getAcceptedRequests = async (token: string): Promise<AcceptedReques
 // Complete a request with rating
 export const completeRequest = async (requestId: string, calificacion: number, comentario: string, token: string) => {
   try {
-    const response = await axios.post(
+    await axios.post(
       `${BASE_URL}/request/${requestId}/complete`,
       {
         calificacion,
@@ -43,7 +43,20 @@ export const completeRequest = async (requestId: string, calificacion: number, c
         timeout: REQUEST_TIMEOUT,
       }
     );
-
+    const response = await axios.post(
+      `${BASE_URL}/review/${requestId}`,
+      {
+        calificacion,
+        comentario,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        timeout: REQUEST_TIMEOUT,
+      }
+    );
     return response.data;
   } catch (error: any) {
     console.error("Error completing request:", error);

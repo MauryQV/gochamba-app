@@ -2,18 +2,21 @@ import { StyleSheet } from "react-native";
 
 import Spinner from "@/components/Spinner";
 import { useServices } from "@/src/hooks/use-services";
-import { ChevronDown, ArrowRight } from "lucide-react-native";
-import { useState } from "react";
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, View, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
+import { ArrowRight, ChevronDown } from "lucide-react-native";
+import { useState } from "react";
+import { Image, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function TabOneScreen() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
   const [ShowCategories, setShowCategories] = useState(false);
-  const [price, setPrice] = useState("");
   const { listServices, categories, refetch } = useServices();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedService, setSelectedService] = useState<any>(null);
+  const [pressTimer, setPressTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [longPressTriggered, setLongPressTriggered] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -21,10 +24,67 @@ export default function TabOneScreen() {
     setRefreshing(false);
   };
 
+  const handleLongPress = (service: any) => {
+    setLongPressTriggered(true);
+    setSelectedService(service);
+    setShowReportModal(true);
+  };
+
+  const handlePressIn = (service: any) => {
+    setLongPressTriggered(false);
+    const timer = setTimeout(() => {
+      handleLongPress(service);
+    }, 1000); // 1 second
+    setPressTimer(timer);
+  };
+
+  const handlePressOut = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
+  const handlePress = (service: any) => {
+    // Only navigate if long press wasn't triggered
+    if (!longPressTriggered) {
+      const serviceToView = {
+        id: service.id,
+        title: service.title,
+        description: service.description,
+        price: service.price || 0,
+        category: service.category,
+        trabajador: service.trabajador,
+        profile_photo: service.profile_photo,
+        images: service.images,
+      };
+      router.push({
+        pathname: "/works/service-detail-screen",
+        params: { service: JSON.stringify(serviceToView) },
+      });
+    }
+    // Reset the flag
+    setLongPressTriggered(false);
+  };
+
+  const navigateToReport = () => {
+    setShowReportModal(false);
+    if (selectedService) {
+      router.push({
+        pathname: "/report/report-publication",
+        params: { service: JSON.stringify(selectedService) },
+      });
+    }
+  };
+
+  const filteredServices =
+    selectedCategory === "Seleccionar Categoria"
+      ? listServices
+      : listServices?.filter((s) => s.category === selectedCategory);
+
   return (
     <View className="flex-1 bg-white">
       {/* Filtros */}
-
       <View className="flex-row px-4 mt-4 space-x-3">
         {/* Categoría */}
         <View className="flex-1 relative">
@@ -35,11 +95,23 @@ export default function TabOneScreen() {
             <Text className="text-gray-700">{selectedCategory}</Text>
             <ChevronDown size={18} color="#555" />
           </TouchableOpacity>
+
           {ShowCategories && (
             <View className="absolute w-full bg-white rounded-lg border border-gray-300 mt-14 z-10">
-              {categories.map((cat, idx) => (
+              {/*Mostrar todos*/}
+              <TouchableOpacity
+                className="px-3 py-2 border-b border-gray-300 bg-gray-100"
+                onPress={() => {
+                  setSelectedCategory("Seleccionar Categoria");
+                  setShowCategories(false);
+                }}
+              >
+                <Text className="font-semibold text-gray-700">Todas las categorías</Text>
+              </TouchableOpacity>
+
+              {categories.map((cat) => (
                 <TouchableOpacity
-                  key={idx}
+                  key={cat.id}
                   className="px-3 py-2 border-b border-gray-200"
                   onPress={() => {
                     setSelectedCategory(cat.name);
@@ -53,6 +125,7 @@ export default function TabOneScreen() {
           )}
         </View>
       </View>
+
       {/* Button for services in progress */}
       <View className=" px-5 pt-4 pb-4">
         <TouchableOpacity
@@ -64,38 +137,32 @@ export default function TabOneScreen() {
           <ArrowRight size={20} color="#fff" />
         </TouchableOpacity>
       </View>
+
       {/* Lista de servicios */}
       <ScrollView
         className="mt-6 px-4"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {!listServices ? (
+        {!filteredServices ? (
           <View className=" mt-10 flex flex-col items-center justify-center">
             <Spinner h={36} w={36} />
             <Text className="text-center text-xs mt-4 text-gray-600">Cargando servicios disponibles</Text>
           </View>
         ) : (
-          listServices.map((s) => (
+          filteredServices.map((s) => (
             <TouchableOpacity
               key={s.id}
               className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm"
-              onPress={() => {
-                // Navigate to service detail screen
-                const serviceToView = {
+              onPress={() => handlePress(s)}
+              onPressIn={() =>
+                handlePressIn({
                   id: s.id,
                   title: s.title,
-                  description: s.description,
-                  price: s.price || 0,
-                  category: s.category,
                   trabajador: s.trabajador,
                   profile_photo: s.profile_photo,
-                  images: s.images,
-                };
-                router.push({
-                  pathname: "/works/service-detail-screen",
-                  params: { service: JSON.stringify(serviceToView) },
-                });
-              }}
+                })
+              }
+              onPressOut={handlePressOut}
               activeOpacity={0.7}
             >
               {/* Header */}
@@ -120,6 +187,33 @@ export default function TabOneScreen() {
           ))
         )}
       </ScrollView>
+
+      {/* Report Modal */}
+      <Modal
+        visible={showReportModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowReportModal(false)}
+      >
+        <TouchableOpacity
+          className="flex-1 bg-black/50 justify-center items-center"
+          activeOpacity={1}
+          onPress={() => setShowReportModal(false)}
+        >
+          <View className="bg-white rounded-2xl p-6 mx-6 w-80" onStartShouldSetResponder={() => true}>
+            <Text className="text-xl font-bold mb-2 text-center">REPORTAR</Text>
+            <Text className="text-gray-600 mb-6 text-center">¿Desea reportar este servicio?</Text>
+
+            <TouchableOpacity
+              onPress={navigateToReport}
+              className="bg-blue-600 py-3 rounded-lg mb-3"
+              activeOpacity={0.8}
+            >
+              <Text className="text-white text-center font-semibold">REPORTAR</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -129,14 +223,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
   },
 });

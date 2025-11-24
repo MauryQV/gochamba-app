@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useState } from "react";
 import {
   Wallet,
@@ -24,6 +24,7 @@ import {
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useRouter } from "expo-router";
 import { useRegister } from "../register/_register-context";
+
 interface MenuItemProps {
   icon: React.ReactNode;
   title: string;
@@ -104,13 +105,18 @@ export default function TwoScreen() {
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1 px-4 pt-4" showsVerticalScrollIndicator={false}>
         <Section title="Administrar cuenta">
-          <MenuItem icon={<User size={22} color="white" />} title="Perfil" onPress={() => console.log("Perfil")} />
+          <MenuItem
+            icon={<User size={22} color="white" />}
+            title="Perfil"
+            colorBgIcon="bg-gray-400"
+            onPress={() => Alert.alert("Aviso", "Funcionalidad futura")}
+          />
 
           {setupData && setupData.rol?.includes("TRABAJADOR") ? (
             <MenuItem
               icon={<HardHat size={22} color="white" />}
               title="Perfil de trabajador"
-              onPress={() => console.log("Perfil")}
+              onPress={() => router.push("/options/worker-profile")}
             />
           ) : (
             <MenuItem
@@ -149,8 +155,8 @@ export default function TwoScreen() {
             // subtitle="Confirmar email"
             showBadge={true}
             // badgeText="⚠"
-            badgeColor="bg-orange-500"
-            onPress={() => console.log("Security settings")}
+            colorBgIcon="bg-gray-400"
+            onPress={() => Alert.alert("Aviso", "Funcionalidad futura")}
           />
           {/* <MenuItem
             icon={<History size={22} color="white" />}
@@ -176,7 +182,8 @@ export default function TwoScreen() {
           <MenuItem
             icon={<Bell size={22} color="white" />}
             title="Notificaciones"
-            onPress={() => console.log("Notifications")}
+            colorBgIcon="bg-gray-400"
+            onPress={() => Alert.alert("Aviso", "Funcionalidad futura")}
           />
           {/* <MenuItem
             icon={<Globe size={22} color="white" />}
