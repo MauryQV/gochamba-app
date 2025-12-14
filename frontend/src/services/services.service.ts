@@ -10,4 +10,16 @@ export const servicesService = {
     const response = await axios.get(`${BASE_URL}/works`);
     return response.data;
   },
+  async deactivateService(serviceId: string, token: string) {
+    const response = await axios.patch(
+      `${BASE_URL}/services/${serviceId}/desactivate`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  },
 };

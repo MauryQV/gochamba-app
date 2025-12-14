@@ -45,7 +45,9 @@ export default function RegisterStepThreeScreen() {
     }
 
     try {
-      await registerUserFinish(setupData);
+      const responseGoogle = await registerUserFinish(setupData);
+      setSetupData({ ...setupData, token: responseGoogle.token });
+      console.log("User registered successfully:", responseGoogle);
       navigator.push("/one");
     } catch (error) {
       if (axios.isAxiosError(error)) {

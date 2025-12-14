@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import { View, Alert, Text, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { X, Check } from "lucide-react-native";
@@ -6,13 +6,26 @@ import Dropdown from "@/components/Dropdown";
 import { useJobs } from "@/src/hooks/use-jobs";
 import { useRegisterWorker } from "@/src/hooks/use-register-worker";
 import { useRegister } from "./register/_register-context";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 export default function RegisterWorkerScreen() {
   const router = useRouter();
-  const { setupData } = useRegister();
+  const { setupData, setSetupData } = useRegister();
   const [ci, setCI] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [selectedOficios, setSelectedOficios] = useState<string[]>([]);
+
+  const signout = async () => {
+    try {
+      await GoogleSignin.signOut();
+      setSetupData(null);
+      router.push("/");
+      console.log("signed out");
+    } catch (error) {
+      alert("Error: Intente de nuevo");
+      console.error("Error signing out: ", error);
+    }
+  };
 
   // Error states
   const [ciError, setCiError] = useState("");
@@ -88,7 +101,9 @@ export default function RegisterWorkerScreen() {
     }
     try {
       await registerNewWorker({ carnetIdentidad: ci, descripcion, oficios: selectedOficios }, setupData?.token);
-      router.replace("/one");
+      Alert.alert("Éxito", "Vuelve a iniciar sesión para continuar.");
+      console.log("Worker registered successfully:");
+      await signout();
     } catch (error) {
       alert("Error registering worker:");
       console.error("Error registering worker:", error);

@@ -1,3 +1,12 @@
+import { BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
+import { Inter_400Regular, Inter_500Medium, Inter_700Bold } from "@expo-google-fonts/inter";
+import {
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_900Black,
+} from "@expo-google-fonts/poppins";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
@@ -7,15 +16,6 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "./../global.css";
-import {
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_700Bold,
-  Poppins_900Black,
-  Poppins_600SemiBold,
-} from "@expo-google-fonts/poppins";
-import { BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
-import { Inter_400Regular, Inter_500Medium, Inter_700Bold } from "@expo-google-fonts/inter";
 import { RegisterProvider } from "./register/_register-context";
 
 import { useColorScheme } from "@/components/useColorScheme";
@@ -32,6 +32,10 @@ export const unstable_settings = {
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+SplashScreen.setOptions({
+  duration: 400,
+  fade: true,
+});
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({

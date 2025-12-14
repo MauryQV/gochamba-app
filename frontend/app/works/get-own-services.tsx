@@ -3,12 +3,23 @@ import { usePublicationsWorker } from "@/src/hooks/use-publications-worker";
 import { useRouter, Stack } from "expo-router";
 import { ChevronDown, DeleteIcon, Eye, Pencil } from "lucide-react-native";
 import { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Alert,
+  RefreshControl,
+} from "react-native";
 
 export default function OwnServices() {
   const [selectedCategory, setSelectedCategory] = useState("Seleccionar Categoria");
   const [ShowCategories, setShowCategories] = useState(false);
   const [price, setPrice] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const headerOptions = {
     headerTitle: "GoChamba",
@@ -18,7 +29,34 @@ export default function OwnServices() {
     headerTitleAlign: "center" as const,
   };
 
-  const { listServices, categories } = usePublicationsWorker();
+  const { listServices, categories, refetch, deactivateService } = usePublicationsWorker();
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  const handleDelete = (serviceId: string, serviceTitle: string) => {
+    Alert.alert("Eliminar servicio", `¿Estás seguro de que deseas eliminar "${serviceTitle}"?`, [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deactivateService(serviceId);
+            Alert.alert("Éxito", "Servicio desactivado correctamente");
+          } catch (error: any) {
+            Alert.alert("Error", error.message || "No se pudo desactivar el servicio");
+          }
+        },
+      },
+    ]);
+  };
 
   const handlePublicarServicio = () => {
     // usar router.push para navegar con expo-router
@@ -60,7 +98,10 @@ export default function OwnServices() {
       </View>
 
       {/* Lista de servicios */}
-      <ScrollView className="mt-6 px-4">
+      <ScrollView
+        className="mt-6 px-4"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
         {!listServices ? (
           <View className=" mt-10 flex flex-col items-center justify-center">
             <Spinner h={36} w={36} />
@@ -130,7 +171,10 @@ export default function OwnServices() {
                   <Eye color="white" height={20} width={20} />
                   <Text className="text-white font-semibold">Ver</Text>
                 </TouchableOpacity>
-                <TouchableOpacity className="bg-red-600 py-2 rounded-lg items-center w-[30%]">
+                <TouchableOpacity
+                  onPress={() => handleDelete(s.id, s.title)}
+                  className="bg-red-600 py-2 rounded-lg items-center w-[30%]"
+                >
                   <Text className="text-white font-semibold">Eliminar</Text>
                 </TouchableOpacity>
               </View>
