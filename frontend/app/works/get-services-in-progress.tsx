@@ -113,7 +113,7 @@ export default function ServicesInProgress() {
               <TouchableOpacity
                 onPress={() => {
                   router.push({
-                    pathname: "/requests/rate-job",
+                    pathname: "../requests/rate-job",
                     params: {
                       requestId: solicitud.id,
                       serviceTitle: solicitud.servicio.titulo,
